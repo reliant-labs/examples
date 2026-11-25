@@ -9,4 +9,4 @@
 -- Write your migration SQL below:
 
 -- forge:backward-compatible — adds a column the running release never reads.
-ALTER TABLE notes ADD COLUMN pinned BOOLEAN NOT NULL;
+ALTER TABLE notes ADD COLUMN pinned BOOLEAN NOT NULL DEFAULT false;
