@@ -1,0 +1,230 @@
+{
+  "schema": "forge.dev/service-catalog/v1",
+  "module": "example.com/notes",
+  "processes": [
+    {
+      "id": "example.com/notes#server",
+      "root": "Server",
+      "command": [
+        "server"
+      ],
+      "components": [
+        "APIListener",
+        "DB",
+        "Notes",
+        "Pprof",
+        "Sessions",
+        "UserAuth",
+        "UserChain",
+        "UserRoutes"
+      ],
+      "serves": [
+        {
+          "component": "Notes",
+          "service": "services.notes.v1.NotesService",
+          "route_set": "UserRoutes",
+          "audience": "user",
+          "resolution": "declared_route_set"
+        }
+      ],
+      "clients": [],
+      "source": {
+        "path": "",
+        "line": 0
+      }
+    }
+  ],
+  "services": [
+    {
+      "name": "services.notes.v1.NotesService",
+      "proto_file": "services/notes/v1/notes.proto",
+      "methods": [],
+      "descriptor": {
+        "Name": "NotesService",
+        "Package": "services.notes.v1",
+        "GoPackage": "example.com/notes/gen/services/notes/v1",
+        "PkgName": "notesv1",
+        "Methods": null,
+        "ProtoFile": "services/notes/v1/notes.proto",
+        "ModulePath": "example.com/notes",
+        "Messages": {},
+        "Audience": "user"
+      }
+    }
+  ],
+  "components": [
+    {
+      "id": "APIListener",
+      "name": "APIListener",
+      "kind": "provider",
+      "type": "*example.com/notes/internal/app.APIListener",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewAPIListener"
+      },
+      "methods": [],
+      "implementation_candidates": []
+    },
+    {
+      "id": "DB",
+      "name": "DB",
+      "kind": "provider",
+      "type": "*example.com/notes/internal/app.DB",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewDB"
+      },
+      "methods": [],
+      "implementation_candidates": []
+    },
+    {
+      "id": "HTTPClient",
+      "name": "HTTPClient",
+      "kind": "provider",
+      "type": "*net/http.Client",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewHTTPClient"
+      },
+      "methods": [],
+      "implementation_candidates": []
+    },
+    {
+      "id": "Notes",
+      "name": "Notes",
+      "kind": "component",
+      "type": "*example.com/notes/internal/handlers/notes.Service",
+      "source": {
+        "path": "internal/handlers/notes/service.go",
+        "symbol": "New"
+      },
+      "methods": [],
+      "implementation_candidates": []
+    },
+    {
+      "id": "ORM",
+      "name": "ORM",
+      "kind": "provider",
+      "type": "*github.com/reliant-labs/forge/pkg/orm.Client",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewORM"
+      },
+      "methods": [],
+      "implementation_candidates": []
+    },
+    {
+      "id": "Pprof",
+      "name": "Pprof",
+      "kind": "provider",
+      "type": "*github.com/reliant-labs/forge/pkg/serverkit.Pprof",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewPprof"
+      },
+      "methods": [],
+      "implementation_candidates": []
+    },
+    {
+      "id": "Sessions",
+      "name": "Sessions",
+      "kind": "provider",
+      "type": "*example.com/notes/internal/app.Sessions",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewSessions"
+      },
+      "methods": [],
+      "implementation_candidates": []
+    },
+    {
+      "id": "UserAuth",
+      "name": "UserAuth",
+      "kind": "provider",
+      "type": "*example.com/notes/internal/app.UserAuth",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewUserAuth"
+      },
+      "methods": [],
+      "implementation_candidates": []
+    },
+    {
+      "id": "UserChain",
+      "name": "UserChain",
+      "kind": "provider",
+      "type": "*example.com/notes/internal/app.UserChain",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewUserChain"
+      },
+      "methods": [],
+      "implementation_candidates": []
+    },
+    {
+      "id": "UserRoutes",
+      "name": "UserRoutes",
+      "kind": "route_set",
+      "type": "",
+      "source": {
+        "path": "",
+        "line": 0
+      },
+      "methods": [],
+      "implementation_candidates": []
+    }
+  ],
+  "bindings": [
+    {
+      "consumer": "DB",
+      "field": "Ctx",
+      "interface": "context.Context",
+      "methods": [],
+      "candidates": [],
+      "providers": [],
+      "resolution": "unresolved"
+    },
+    {
+      "consumer": "UserAuth",
+      "field": "Enrich",
+      "interface": "example.com/notes/pkg/middleware.ClaimsEnricher",
+      "methods": [],
+      "candidates": [],
+      "providers": [],
+      "resolution": "unresolved"
+    }
+  ],
+  "clients": [],
+  "diagnostics": [
+    {
+      "code": "binding_unresolved",
+      "component": "DB.Ctx",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewDB"
+      }
+    },
+    {
+      "code": "binding_unresolved",
+      "component": "UserAuth.Enrich",
+      "source": {
+        "path": "internal/app/providers.go",
+        "symbol": "NewUserAuth"
+      }
+    },
+    {
+      "code": "bundle_method_sets_omitted",
+      "source": {
+        "path": "",
+        "line": 0
+      }
+    },
+    {
+      "code": "coverage_generated_routes_and_registered_clients_only",
+      "source": {
+        "path": "",
+        "line": 0
+      }
+    }
+  ]
+}

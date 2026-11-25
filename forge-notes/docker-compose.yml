@@ -1,0 +1,551 @@
+# Images: nothing here pulls from Docker Hub. Its anonymous pull limit is per
+# IP, so an office, a CI runner or a cloud sandbox that shares one address runs
+# out partway through a first `forge env up`. Each image comes from its
+# publisher's own registry where there is one (ghcr for OpenTelemetry and
+# Zitadel, quay for Prometheus), from public.ecr.aws/docker/library (the Docker
+# Official Images mirror) for postgres, and from mirror.gcr.io (Google's Docker
+# Hub cache) for ClickStack, which is published only to Docker Hub.
+#
+# Every image is pinned by digest, so a registry is only transport: what runs
+# is what the digest names, from whichever host serves it. To pull through
+# your own mirror, change the host and keep the digest.
+services:
+  # The app's database as a CONTAINER — available, but NOT what the
+  # scaffolded dev environment runs.
+  #
+  # `deploy/kcl/dev/main.k` declares postgres as a `forge.HostInfra`, so
+  # `forge env up` starts a real postgres binary as a host process and never
+  # touches this service. The reasoning is there, in the file that makes the
+  # choice; the short version is that a dev loop whose own code runs on the
+  # host should not require a container runtime underneath it, and on a small
+  # cloud VM docker costs hundreds of megabytes before the project starts.
+  #
+  # To use this instead, change that one declaration:
+  #
+  #     deploy = forge.Compose {service = "postgres"}
+  #
+  # and set the DSN's port to match the one published below. Nothing else
+  # changes; the app cannot tell the difference.
+  postgres:
+    image: public.ecr.aws/docker/library/postgres:17-alpine@sha256:1bcc18d81671b02906296aad470ec9778a6b71016ce953092024b680bad007b0
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 0.5
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-notes}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      # Fixed, loopback-bound host port so the host-side dev loop
+      # (`forge env up dev`, psql, DATABASE_URL) reaches postgres without
+      # inspecting `docker compose ps` for a random mapping. Override
+      # with POSTGRES_PORT if 5432 is taken.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - notes-net
+
+  app:
+    build:
+      context: .
+      target: dev
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-notes}?sslmode=disable
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_PROFILES_ENDPOINT: http://otel-profiles:4318/v1development/profiles
+      OTEL_SERVICE_NAME: notes
+      ENVIRONMENT: development
+      LOG_LEVEL: debug
+      LOG_FORMAT: text
+      AUTO_MIGRATE: "true"
+      # pprof is on by default and bound to LOOPBACK by the config
+      # default (127.0.0.1:6060). Loopback inside a container is the
+      # container's own netns, so nothing outside it — no scraper, no
+      # published port — can reach it. This
+      # is the deliberate container-boundary override, and it is safe
+      # because it is confined to this compose network: no port for it
+      # is published to the host, and the k8s manifests give it no
+      # Service. `docker compose exec app` or a published port of your
+      # own is how you reach it by hand.
+      PPROF_ADDR: "0.0.0.0:6060"
+      # ── Identity (see the `idp` service below) ────────────────────────
+      #
+      # These are PASSTHROUGH with an empty default, and empty is the
+      # CLOSED state, not an off switch: with no key material the
+      # validator SetupAuth builds rejects every credential it is shown.
+      # Nothing here decides WHETHER this server authenticates — that is
+      # AuthDeps{AnonymousOK: false} plus the protos' auth_required
+      # declarations, both in source. There is deliberately no
+      # AUTH_ENABLED.
+      #
+      # Bringing the environment up writes both JWT_ISSUER and
+      # JWT_JWKS_URL, and against the dev IdP they name the SAME origin
+      # (http://localhost:${IDP_PORT}) — the one the browser uses. They
+      # stay two fields because a real deployment can need them to
+      # differ; here they do not, so discovery would work too.
+      #
+      # THIS CONTAINER is the exception, and it is why the dev loop for
+      # a project with an IdP is `forge env up` (host processes) rather
+      # than `docker compose up app`. Zitadel resolves WHICH instance a
+      # request is for from the request's Host header, and the instance
+      # only knows the domain it was configured with (`localhost`). A
+      # fetch from inside this network to http://idp:8080 is answered
+      # "Instance not found" — so an in-network JWKS URL does not work,
+      # and no URL can carry the override. A host process reaches the
+      # IdP at the same localhost URL the browser does, which is the
+      # configuration forge writes.
+      JWT_ISSUER: ${JWT_ISSUER-}
+      JWT_JWKS_URL: ${JWT_JWKS_URL-}
+      JWT_AUDIENCE: ${JWT_AUDIENCE-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID-}
+      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI-}
+      OIDC_SCOPES: ${OIDC_SCOPES-}
+    ports:
+      - "0:8080"
+      - "0:6060"
+    volumes:
+      - .:/app
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickstack:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider http://localhost:8080/healthz || exit 1",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    networks:
+      - notes-net
+
+  app-debug:
+    build:
+      context: .
+      target: debug
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-notes}?sslmode=disable
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_PROFILES_ENDPOINT: http://otel-profiles:4318/v1development/profiles
+      OTEL_SERVICE_NAME: notes
+      ENVIRONMENT: development
+    ports:
+      - "0:8080"
+      - "0:2345"
+    security_opt:
+      - "apparmor=unconfined"
+    cap_add:
+      - SYS_PTRACE
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickstack:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider http://localhost:8080/healthz || exit 1",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    profiles:
+      - debug
+    networks:
+      - notes-net
+
+  # ClickStack — the local observability backend, ON by default.
+  #
+  # ONE container, HyperDX's own "local mode" image (clickhouse/clickstack-local):
+  # ClickHouse + MongoDB + the HyperDX UI/API + the ClickStack OTel collector.
+  # Local mode is HyperDX's documented no-auth build, so there is nothing to
+  # register and no ingestion key to copy: the collector opens its OTLP
+  # receivers at boot and accepts traces, metrics and logs from any caller that
+  # can reach the port. That is safe here only because every port below is
+  # published on LOOPBACK. The separate-container topology (OpAMP-managed
+  # collector + team API keys) opens no OTLP port until someone registers in the
+  # UI, and then demands a key apps cannot send — do not reintroduce it.
+  #
+  # Three signals, one path each:
+  #   traces + metrics  host processes push OTLP/HTTP to 127.0.0.1:4318 (`forge
+  #                     env up` exports OTEL_EXPORTER_OTLP_ENDPOINT to them);
+  #                     compose services push to http://otel-collector:4318.
+  #   logs              the collector tails .forge/logs/<env>/<service>.log —
+  #                     the files `forge env up` already tees every host
+  #                     process into — and parses the JSON lines the runtime
+  #                     writes. See deploy/observability/otel-collector.yaml.
+  #
+  # ClickHouse is NOT published: it listens only inside this container, behind
+  # the user below (the passwordless `default` user is removed). Query it with
+  #   docker compose exec clickstack sh -c 'clickhouse-client -u "$CLICKHOUSE_USER" --password "$CLICKHOUSE_PASSWORD"'
+  #
+  # To turn it off: `_observability = False` in deploy/kcl/dev/main.k.
+  #
+  # Ports are declared once in deploy/kcl/dev/main.k and handed to compose as
+  # CLICKSTACK_*_PORT; the defaults only serve a bare `docker compose up`.
+  clickstack:
+    image: mirror.gcr.io/clickhouse/clickstack-local:2.40.0@sha256:4690fbfc2f25e2366ca496aabf4ee9e14d6cacb42119b84888b182495e6a5b74
+    restart: unless-stopped
+    # tini as PID 1: the dashboard-provisioner loop below is a background child
+    # of the image's entrypoint and would otherwise be reparented to a shell.
+    init: true
+    ports:
+      - "127.0.0.1:${CLICKSTACK_UI_PORT:-8180}:8080" # HyperDX UI + API
+      - "127.0.0.1:${CLICKSTACK_OTLP_HTTP_PORT:-4318}:4318" # OTLP/HTTP, for host processes
+      - "127.0.0.1:${CLICKSTACK_OTLP_GRPC_PORT:-4317}:4317" # OTLP/gRPC, for host processes
+    environment:
+      FRONTEND_URL: http://localhost:${CLICKSTACK_UI_PORT:-8180}
+      # Dev-only credentials, never published. Setting a user removes the
+      # image's passwordless `default`; the collector and HyperDX both read
+      # these from the container env.
+      CLICKHOUSE_USER: forge
+      CLICKHOUSE_PASSWORD: ${CLICKSTACK_CLICKHOUSE_PASSWORD:-forge-dev-only}
+      DEFAULT_CONNECTIONS: '[{"name":"Local ClickHouse","host":"http://localhost:8123","username":"forge","password":"${CLICKSTACK_CLICKHOUSE_PASSWORD:-forge-dev-only}"}]'
+      USAGE_STATS_ENABLED: "false"
+      # Table TTL from Observability.retention (one TTL covers every table:
+      # the longest hint). Unset keeps ClickStack's own default.
+      HYPERDX_OTEL_EXPORTER_TABLES_TTL: ${CLICKSTACK_TABLES_TTL:-720h}
+      # YOUR collector pipelines, merged over ClickStack's: the filelog log path.
+      CUSTOM_OTELCOL_CONFIG_FILE: /etc/otelcol-contrib/forge.config.yaml
+      # Where the dashboard provisioner reads HyperDX v2 dashboard JSON (below).
+      DASHBOARD_PROVISIONER_DIR: /etc/forge/dashboards
+    # Local mode starts neither the dashboard provisioner nor a Team document
+    # for it to attach to. This wrapper adds both: once the API is up it loads
+    # every *.json in the provisioner dir, and again whenever the set of files
+    # changes, so dropping a dashboard in needs no restart. (`$$` is compose's
+    # escape for a literal `$`.)
+    entrypoint:
+      - sh
+      - -c
+      - |
+        cat > /tmp/forge-bind.js <<'FORGE_BIND'
+        var T = ObjectId("5f6c6f63616c5f7465616d5f");
+        var ids = {};
+        db.sources.find({team: T}).forEach(function (s) { ids[s.name] = s._id.str; });
+        db.dashboards.find({team: T, provisioned: true}).forEach(function (d) {
+          var tiles = (d.tiles || []).map(function (t) { if (t.config && ids[t.config.source]) { t.config.source = ids[t.config.source]; } return t; });
+          var filters = (d.filters || []).map(function (f) { if (ids[f.source]) { f.source = ids[f.source]; } return f; });
+          db.dashboards.updateOne({_id: d._id}, {$$set: {tiles: tiles, filters: filters}});
+        });
+        var raw = "";
+        listFiles("/etc/forge/dashboards").forEach(function (f) {
+          if (f.isDirectory || !/_gen\.ndjson$$/.test(f.name)) { return; }
+          try { raw += cat(f.name) + "\n"; } catch (e) {}
+        });
+        raw.split("\n").forEach(function (line) {
+          if (!line) { return; }
+          var s = JSON.parse(line);
+          if (!ids[s.source]) { return; }
+          db.savedsearches.updateOne({team: T, name: s.name}, {$$set: {select: s.select, where: s.where, whereLanguage: s.whereLanguage, orderBy: s.orderBy, source: ObjectId(ids[s.source]), tags: s.tags}}, {upsert: true});
+        });
+        FORGE_BIND
+        (
+          until curl -fs http://localhost:8000/health >/dev/null 2>&1; do sleep 3; done
+          last=
+          while :; do
+            # The image starts the collector once, with no retry. On a starved
+            # machine its OpAMP supervisor can miss its bootstrap window and
+            # exit ("failed to start supervisor"), leaving a healthy UI and
+            # nothing listening on 4317/4318. Start it again, with the
+            # environment the image gave the rest of the stack.
+            if ! pgrep -x opampsupervisor >/dev/null; then
+              echo "[forge] the ClickStack collector is not running; starting it again"
+              xargs -0 -a /proc/$$(pgrep -f '^node ./node_modules/.bin/concurrently' | head -1)/environ \
+                sh -c 'exec env "$$@" /otel-entrypoint.sh /usr/local/bin/opampsupervisor' sh >/proc/1/fd/1 2>&1 &
+              sleep 20
+            fi
+            now=$$(cd "$$DASHBOARD_PROVISIONER_DIR" && cksum *.json *.ndjson 2>/dev/null)
+            if [ "$$now" != "$$last" ]; then
+              mongo --quiet hyperdx --eval 'db.teams.updateOne({_id: ObjectId("5f6c6f63616c5f7465616d5f")}, {$$setOnInsert: {name: "Local App Team", collectorAuthenticationEnforced: false}}, {upsert: true})' >/dev/null
+              (cd /app && MONGO_URI=mongodb://db:27017/hyperdx IS_LOCAL_APP_MODE='DANGEROUSLY_is_local_app_mode💀' HYPERDX_IMAGE=all-in-one-noauth RUN_SCHEDULED_TASKS_EXTERNALLY=true DASHBOARD_PROVISIONER_TEAM_ID=5f6c6f63616c5f7465616d5f ./packages/api/bin/hyperdx task provision-dashboards) >/proc/1/fd/1 2>&1 && last="$$now"
+            fi
+            # Dashboards name their source ("Logs", "Traces", "Metrics"); the
+            # UI looks a source up by its mongo id, which is random per
+            # database. Swap each name for this database's id, and upsert the
+            # generated saved searches, which the file provisioner has no path
+            # for. Idempotent, so it runs every pass: a name already replaced
+            # matches nothing, and a source that does not exist yet is retried.
+            mongo --quiet hyperdx /tmp/forge-bind.js >/dev/null
+            sleep 15
+          done
+        ) &
+        exec sh /etc/local/entry.sh
+    volumes:
+      - clickstack_clickhouse:/var/lib/clickhouse
+      - clickstack_mongo:/data/db
+      - ./deploy/observability/otel-collector.yaml:/etc/otelcol-contrib/forge.config.yaml:ro
+      - ./.forge/logs:/var/log/forge:ro
+      - ./deploy/observability/dashboards:/etc/forge/dashboards:ro
+    healthcheck:
+      # Ready means the thing #603 never had: the UI answers AND the collector
+      # is actually accepting OTLP (it opens its receivers only once HyperDX
+      # has handed it config, a moment after the UI is up).
+      test:
+        - CMD-SHELL
+        - >-
+          curl -fs http://localhost:8080/api/health >/dev/null &&
+          curl -fs -X POST -H 'Content-Type: application/json' -d '{}' http://localhost:4318/v1/traces >/dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+    networks:
+      notes-net:
+        # What compose services (and the `app` service above) export to.
+        aliases:
+          - otel-collector
+
+  # otel-forwarder — stands in for `clickstack` when the env declares an
+  # observability DESTINATION (`destination = forge.ObservabilityDestination
+  # {...}` in deploy/kcl/dev/main.k): a plain collector that forwards OTLP and
+  # the host processes' logs there instead of storing them locally. Its
+  # pipelines are rendered by `forge env up` from that declaration into
+  # .forge/observability/forwarder.yaml; the destination's headers arrive as
+  # FORGE_OTLP_HEADERS from the env's secret store, never from this file.
+  # Apps are unchanged: they keep exporting to the same local port.
+  otel-forwarder:
+    image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.162.0@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6
+    restart: unless-stopped
+    # The gate lets a destination that accepts profiles get them
+    # (`signals.profiles = True`); it is inert while no profiles pipeline exists.
+    command:
+      [
+        "--config=/etc/otel/forwarder.yaml",
+        "--feature-gates=+service.profilesSupport",
+      ]
+    ports:
+      - "127.0.0.1:${OTEL_FORWARDER_HTTP_PORT:-4318}:4318"
+      - "127.0.0.1:${OTEL_FORWARDER_GRPC_PORT:-4317}:4317"
+    # A destination on this machine (localhost, 127.0.0.1) is rendered as
+    # host.docker.internal: inside this container "localhost" is the container.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      FORGE_OTLP_HEADERS: ${FORGE_OTLP_HEADERS:-}
+    volumes:
+      - ./.forge/observability/forwarder.yaml:/etc/otel/forwarder.yaml:ro
+      - ./.forge/logs:/var/log/forge:ro
+    networks:
+      notes-net:
+        aliases:
+          - otel-collector
+
+  # ── Profiles ───────────────────────────────────────────────────────────────
+  # The collector inside `clickstack` is ClickStack's own build of contrib v0.155:
+  # it receives profiles but cannot WRITE them. So continuous profiles take a
+  # SECOND collector, stock contrib v0.162.0 with the `service.profilesSupport`
+  # feature gate, writing to the ClickHouse inside `clickstack` (26.8, past the
+  # 26.2 contrib's profiles exporter needs). Nothing replaces the collector above;
+  # traces, metrics and logs keep their one endpoint.
+  #
+  # Apps PUSH. pkg/observe captures a 10s CPU profile plus heap and goroutine
+  # snapshots about once a minute and POSTs OTLP profiles to
+  # OTEL_EXPORTER_OTLP_PROFILES_ENDPOINT. dev/main.k's declaration
+  # (`profiles_port`) points host processes at 127.0.0.1:${CLICKSTACK_PROFILES_OTLP_PORT};
+  # compose services use `otel-profiles` below. It runs only beside `clickstack`
+  # (it writes into its ClickHouse), so a destination env does not start it.
+  # The collector scrapes nothing. OTEL_PROFILES_EXPORTER=none turns a
+  # process's profiling off.
+  #
+  # Tables and TTLs live in deploy/observability/profiles-schema.sql, applied
+  # idempotently by `profiles-schema` on every up; the collector writes only
+  # (create_schema: false). Read them back with `forge obs profile`.
+  #
+  # Pinned by digest AND version: the profiles wire format is v1development and
+  # changes between releases. pkg/observe's converter is pinned to the same
+  # v0.162.0; bump them together.
+  profiles-schema:
+    image: mirror.gcr.io/clickhouse/clickstack-local:2.40.0@sha256:4690fbfc2f25e2366ca496aabf4ee9e14d6cacb42119b84888b182495e6a5b74
+    restart: "no"
+    depends_on:
+      clickstack:
+        condition: service_healthy
+    environment:
+      CLICKHOUSE_USER: forge
+      CLICKHOUSE_PASSWORD: ${CLICKSTACK_CLICKHOUSE_PASSWORD:-forge-dev-only}
+    entrypoint:
+      - sh
+      - -c
+      - >-
+        until clickhouse-client --host clickstack -u "$$CLICKHOUSE_USER" --password "$$CLICKHOUSE_PASSWORD" --query 'SELECT 1' >/dev/null 2>&1; do sleep 2; done;
+        exec clickhouse-client --host clickstack -u "$$CLICKHOUSE_USER" --password "$$CLICKHOUSE_PASSWORD" --multiquery < /etc/forge/profiles-schema.sql
+    volumes:
+      - ./deploy/observability/profiles-schema.sql:/etc/forge/profiles-schema.sql:ro
+    networks:
+      - notes-net
+
+  otel-profiles:
+    image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.162.0@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6
+    restart: unless-stopped
+    command:
+      - --config=/etc/otelcol/profiles.yaml
+      - --feature-gates=+service.profilesSupport
+    ports:
+      - "127.0.0.1:${CLICKSTACK_PROFILES_OTLP_PORT:-4328}:4318" # OTLP/HTTP profiles, for host processes
+    environment:
+      CLICKHOUSE_USER: forge
+      CLICKHOUSE_PASSWORD: ${CLICKSTACK_CLICKHOUSE_PASSWORD:-forge-dev-only}
+    volumes:
+      - ./deploy/observability/otel-profiles.yaml:/etc/otelcol/profiles.yaml:ro
+    depends_on:
+      profiles-schema:
+        condition: service_completed_successfully
+    networks:
+      notes-net:
+        aliases:
+          - otel-profiles
+
+  # ── Local alert delivery ─────────────────────────────────────────────────
+  # The Alertmanager the local evaluator (`forge obs alerts run`, the
+  # `alerts` workload in deploy/kcl/dev/main.k) posts firing alerts to. Its
+  # configuration is NOT written here: `forge env up` renders it into
+  # .forge/observability/alertmanager/ from the env's forge.Alerts with the
+  # control plane's own renderer (forge/pkg/alerting/amconfig), so a route
+  # reaches the same receiver locally as in production. Receivers are
+  # forge.AlertReceiver entries; their secrets come from the env's secret
+  # store as files under secrets/. The default receiver, reliant-inapp,
+  # delivers to the evaluator, which writes .forge/logs/dev/alerts.log.
+  #
+  # The image is the version (and digest) the control plane runs and links
+  # the config loader of, from the Prometheus project's own registry (quay
+  # serves the same digest as Docker Hub, without its anonymous pull limit).
+  # One replica, so gossip is off. host.docker.internal is how it reaches
+  # receivers on this machine (forge rewrites localhost to it).
+  alertmanager:
+    image: quay.io/prometheus/alertmanager:v0.28.1@sha256:27c475db5fb156cab31d5c18a4251ac7ed567746a2483ff264516437a39b15ba
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --web.listen-address=:9093
+      - --cluster.listen-address=
+    ports:
+      - "127.0.0.1:${ALERTMANAGER_PORT:-9093}:9093" # API + UI
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./.forge/observability/alertmanager:/etc/alertmanager:ro
+      - alertmanager_data:/alertmanager
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9093/-/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+    networks:
+      - notes-net
+
+  # ── Object storage (forge.Bucket) ────────────────────────────────────────
+  # MinIO: the S3 API forge/pkg/blobstore speaks, for the buckets
+  # deploy/kcl/dev/main.k declares on a forge.BucketOnMinIO. `forge env up`
+  # runs it only when the env declares one (`forge.minio_workload` binds
+  # this service), and everything below comes from that declaration through
+  # the compose environment: the published port, the root credentials, the
+  # buckets to create, the ones anyone may read, and the CORS origins the
+  # browser uploads from. A bucket is created at start and never deleted;
+  # the data persists in the minio_data volume. Anonymous access is
+  # reconciled on every start, for every bucket: download for a public_read
+  # one, none for the rest, so a bucket declared private again closes even
+  # though the volume kept the policy it had.
+  #
+  # Upstream MinIO stopped publishing images in 2025. Chainguard builds it
+  # from source, with the `mc` client beside it, which is what creates the
+  # buckets once the server answers. Healthy means every bucket exists.
+  minio:
+    image: cgr.dev/chainguard/minio@sha256:3c60a2a8c4d33409a9bc7a623a7fcbfb4605adc3d89422d2f53b3f673a6e5597
+    restart: unless-stopped
+    mem_limit: 512m
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        rm -f /tmp/buckets-ready
+        minio server /data --address :9000 --console-address :9001 &
+        pid=$$!
+        trap 'kill -TERM $$pid; wait $$pid; exit 0' TERM INT
+        until mc alias set local http://127.0.0.1:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null 2>&1; do sleep 0.5; done
+        for b in $$MINIO_BUCKETS; do mc mb --ignore-existing --region "$$MINIO_REGION" "local/$$b" || exit 1; done
+        for b in $$MINIO_BUCKETS; do
+          access=none
+          for p in $$MINIO_PUBLIC_BUCKETS; do [ "$$p" = "$$b" ] && access=download; done
+          mc anonymous set "$$access" "local/$$b" || exit 1
+        done
+        touch /tmp/buckets-ready
+        wait $$pid
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      MINIO_BUCKETS: ${MINIO_BUCKETS-}
+      MINIO_PUBLIC_BUCKETS: ${MINIO_PUBLIC_BUCKETS-}
+      MINIO_API_CORS_ALLOW_ORIGIN: ${MINIO_API_CORS_ALLOW_ORIGIN:-*}
+      MC_CONFIG_DIR: /tmp/mc
+    ports:
+      - "127.0.0.1:${MINIO_PORT:-9000}:9000" # S3 API
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-0}:9001" # web console (0 = any free port)
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/buckets-ready"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    networks:
+      - notes-net
+
+  # Mailpit: the dev mail catcher, for a project whose infra runs in compose
+  # rather than as host processes (the default is forge.HostInfra
+  # {engine = "mailpit"}, the same release run natively). The IdP's mail
+  # (invitations, verification, reset, magic links) goes to its SMTP port and
+  # is read in the web UI; nothing leaves the machine. Same release as the
+  # host engine (internal/hostinfra/mailpit.go), from the publisher's own
+  # registry, pinned by digest. Messages persist in the mailpit_data volume.
+  mailpit:
+    image: ghcr.io/axllent/mailpit:v1.33.0@sha256:9b3a463be15354c0f0eba91697d80e3e0d8a5623ef0e627cacc836bc17fd5231
+    restart: unless-stopped
+    mem_limit: 128m
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_DISABLE_VERSION_CHECK: "true"
+    ports:
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025" # SMTP
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025" # web UI and API
+    volumes:
+      - mailpit_data:/data
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    networks:
+      - notes-net
+
+volumes:
+  postgres_data:
+  go_mod_cache:
+  go_build_cache:
+  clickstack_clickhouse:
+  clickstack_mongo:
+  alertmanager_data:
+  minio_data:
+  mailpit_data:
+
+networks:
+  notes-net:
+    driver: bridge

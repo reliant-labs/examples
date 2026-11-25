@@ -1,0 +1,137 @@
+# See https://pre-commit.com for full docs. Run locally with:
+#     pip install pre-commit && pre-commit install
+# CI runs the same set via .github/workflows/pre-commit.yml.
+#
+# FORGE-GENERATED FILES ARE EXCLUDED FROM EVERY MUTATING HOOK. forge writes
+# them already formatted, and `forge ci verify-generated` regenerates them and
+# demands a byte-identical tree — so a hook that rewrites one (a whitespace
+# fixer, goimports regrouping protoc-gen-go's imports, prettier re-wrapping a
+# generated hook file) makes the two gates fight on every commit. The
+# exclusion is one pattern, repeated on each mutating hook:
+#   (^|/)gen/                     generated Go + TS stubs
+#   _gen(_test)?(\.test)?\.<ext>   *_gen.go, *_gen_test.go, *_gen.ts, *_gen.test.ts, *_gen.k
+#   ^\.forge-kcl/                 the KCL module forge materializes locally
+#   (^|/)public/config\.js$       a frontend's rendered runtime config
+#   (^|/)src/hooks/index\.ts$     the generated hooks barrel
+# A file you take over with `forge project disown` is yours: drop it from
+# the pattern if you want the formatters to own it too.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # testdata/ is excluded from the two whitespace fixers. Golden
+      # snapshots assert on EXACT bytes — trailing blank lines included —
+      # so "fixing" one silently rewrites the expectation the test exists
+      # to check, and the suite goes red for a reason the diff makes look
+      # cosmetic. Forge-generated files are excluded too (see the top).
+      - id: trailing-whitespace
+        exclude: (^|/)testdata/|(^|/)gen/|_gen(_test)?(\.test)?\.[A-Za-z0-9]+$|^\.forge/|^\.forge-kcl/|(^|/)public/config\.js$|(^|/)src/hooks/index\.ts$
+      - id: end-of-file-fixer
+        exclude: (^|/)testdata/|(^|/)gen/|_gen(_test)?(\.test)?\.[A-Za-z0-9]+$|^\.forge/|^\.forge-kcl/|(^|/)public/config\.js$|(^|/)src/hooks/index\.ts$
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      # pnpm-lock.yaml is two YAML documents once package.json pins pnpm
+      # (the pinned pnpm, then the project), and a multi-document stream
+      # is valid YAML; without the flag check-yaml rejects the lockfile
+      # every frontend commits.
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+      - id: check-json
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      # testdata/ is excluded from both: these trees are deliberately
+      # malformed fixtures (off-module imports, phantom packages) that the
+      # linter tests assert on, and goimports "fixes" them into passing —
+      # silently deleting the very import a test expects it to flag.
+      # Generated Go is excluded too (see the top): goimports regroups
+      # protoc-gen-go's single import block in gen/.
+      - id: go-fmt
+        exclude: (^|/)testdata/|(^|/)gen/|_gen(_test)?\.go$
+      - id: go-imports
+        exclude: (^|/)testdata/|(^|/)gen/|_gen(_test)?\.go$
+
+  # prettier is a LOCAL hook pinned to the exact release your frontends'
+  # package.json pins, so the hook and `npm run format` never disagree about the
+  # same file. Bump both together.
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier
+        entry: prettier --write --ignore-unknown
+        language: node
+        additional_dependencies: ["prettier@3.5.3"]
+        types: [text]
+        # Restrict to frontend + docs so prettier does not fight gofmt or
+        # golangci-lint on Go files.
+        #
+        # skills/ is excluded: prettier pads every markdown table cell to the
+        # column width, which inflates a skill far past the delivery budget
+        # (audit-json went 13843 -> 34328 bytes, against a 24000 hard cap) and
+        # rewrites the very table headers TestSkillsAuditCategoryDocsMatchEmittedSet
+        # asserts on. These files are size- and structure-checked by tests;
+        # a formatter cannot own them.
+        #
+        # Forge-generated files are excluded (see the top), and so is
+        # forge.yaml: forge rewrites it in place when a command updates the
+        # manifest, and a prettier pass on top is a diff forge then fights.
+        #
+        # Lockfiles are the package manager's output: it rewrites them on
+        # every install, so a prettier pass is a diff the next install
+        # reverts. AGENTS.md and CLAUDE.md are the agent guide, kept compact
+        # because it is loaded into every agent's context: prettier pads its
+        # tables to the column width, the same inflation as skills/.
+        # deploy/observability/dashboards/ holds HyperDX dashboards in the
+        # JSON shape forge renders and HyperDX exports, not prettier's.
+        files: \.(ts|tsx|js|jsx|json|md|yml|yaml|css)$
+        exclude: (^|/)gen/|_gen(_test)?(\.test)?\.[A-Za-z0-9]+$|^\.forge/|^\.forge-kcl/|(^|/)public/config\.js$|(^|/)src/hooks/index\.ts$|\.pb\.go$|/skills/.*\.md$|^forge\.yaml$|(^|/)(pnpm-lock\.yaml|package-lock\.json)$|^(AGENTS|CLAUDE)\.md$|^deploy/observability/dashboards/
+
+  # go vet as a LOCAL hook rather than dnephin's go-vet. Two reasons:
+  # v0.5.1 ships no go-vet-mod (the module-wide id), and its go-vet runs
+  # `go vet` per changed DIRECTORY — which drags in testdata
+  # fixtures that are deliberately unbuildable (phantom imports, build
+  # constraints that exclude every file) and fails on them. Vetting the
+  # module honors those constraints and matches what CI checks.
+  - repo: local
+    hooks:
+      - id: go-vet-mod
+        name: go vet (module)
+        entry: go vet ./...
+        language: system
+        files: \.go$
+        pass_filenames: false
+
+  # Buf has no first-party pre-commit mirror; invoke its CLI locally.
+  # `buf format -d` prints a diff and exits non-zero on any
+  # formatting difference — exactly the semantics pre-commit expects.
+  - repo: local
+    hooks:
+      - id: buf-format
+        name: buf format
+        entry: buf format -d --exit-code
+        language: system
+        files: \.proto$
+        pass_filenames: false
+
+  # Conventional Commits enforcement, as a LOCAL node hook on registry
+  # packages at exact versions. A hook repo (the commitlint-pre-commit-hook
+  # mirror) is installed by npm as a git dependency, which npm refuses under
+  # its EALLOWGIT policy ("Fetching non-root packages of type git have been
+  # disabled") — the first commit then fails before commitlint runs.
+  - repo: local
+    hooks:
+      - id: commitlint
+        name: commitlint
+        entry: commitlint --edit
+        language: node
+        stages: [commit-msg]
+        additional_dependencies:
+          - "@commitlint/cli@19.8.1"
+          - "@commitlint/config-conventional@19.8.1"

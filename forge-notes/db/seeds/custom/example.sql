@@ -1,0 +1,8 @@
+-- db/seeds/custom/example.sql (yours — edit or delete freely)
+--
+-- Applied after `forge db seed apply` materializes the deterministic
+-- dataset. Uncomment and adapt to a real table in your schema.
+--
+-- INSERT INTO organizations (id, name) VALUES
+--     ('dev-org-001', 'Acme (demo)')
+-- ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;

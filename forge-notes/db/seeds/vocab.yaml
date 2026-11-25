@@ -1,0 +1,54 @@
+# db/seeds/vocab.yaml — yours: what your columns MEAN, for `forge db seed` and the mock
+# fixtures. The schema gives types and constraints, never meaning, so an undescribed column seeds
+# `sample_<column>_<row>`. Values are validated against the schema; PK/FK columns are never
+# overridable. After editing, run `forge generate` (mock fixtures cache this file).
+# Depth: `forge skill load db/seeding`.
+#
+# Schema (uncomment and adapt):
+#
+# pools:                       # shared pools, referenced from several columns
+#   product_names: [Alpha One, Beta Two, Gamma Three]
+# columns:                     # "table.column": inline list, {pool: name},
+#                              # {type: name}, {min: n, max: n}, or
+#                              # {from: -30d, to: now} for a time column
+#   products.name: {pool: product_names}
+#   catalog_items.name: {pool: product_names}
+#   brands.name: [Northwind, Contoso Labs]
+#   orders.currency: [USD]     # a pool of ONE pins every row to that value
+#
+# NUMERIC columns take a range. Describe every one that means something —
+# an undescribed numeric column seeds as the ROW INDEX (1, 2, 3 …), which
+# is inside every CHECK and therefore never reported, but it makes money
+# render as a fraction of a cent and makes two numeric columns on the same
+# table perfectly correlated:
+#
+#   products.price_cents: {min: 1200, max: 24900, step: 100}
+#   products.stock_quantity: {min: 0, max: 250}
+#   products.rating: {min: 1.0, max: 5.0, step: 0.5, decimals: 1}
+#
+# TIMESTAMP and DATE columns take instants RELATIVE TO NOW (the day the seed
+# runs), so seeded dates stay current: a range, or a list of offsets
+# (m/h/d/w) and absolute ISO dates. Undescribed ones land in the last 4 weeks.
+#
+#   orders.placed_at: {from: -90d, to: now}
+#   deliveries.scheduled_for: {from: -1w, to: +4w, step: 1h}
+#   invoices.due_on: [+2w, +4w, +30d]
+#
+# BOOLEAN columns take true/false; null fills a NULLABLE column. Repeating an
+# entry weights the draw, for every kind of value:
+#
+#   products.active: [true, true, true, false]      # ~75% active
+#   orders.notes: [null, null, "Leave at the door"] # ~2/3 empty
+#   orders.shipped_at: [null, -2d, -5d]             # null on NOT NULL refuses the seed
+#
+# TWO TRAPS WORTH THE 30 SECONDS, both of which produce data that satisfies
+# the schema and still breaks a page:
+#
+#   * A 3-char currency column (`CHECK (char_length(currency) = 3)`) synthesizes
+#     as "sa5" — a valid length, and a currency code nothing recognises.
+#     The generated pages can only print it as a bare amount beside the raw
+#     code, not as money. Pin it:
+#     `products.currency: [USD]`.
+#   * A column you MEANT to be unique but did not declare UNIQUE will repeat.
+#     The seeder draws without replacement only for a real UNIQUE constraint —
+#     if duplicates matter, fix the migration, not this file.

@@ -1,0 +1,221 @@
+{
+  "version": "forge.alert-defaults/v3",
+  "input": {
+    "project": "notes",
+    "frontend_services": [
+      "notes-web"
+    ]
+  },
+  "defaults": [
+    {
+      "id": "frontend-js-errors",
+      "alert": "FrontendJSErrorSpike",
+      "title": "Frontend JS errors spiking against the 1h baseline",
+      "severity": "warning",
+      "for": "10m",
+      "interval": "1m",
+      "signal": "traces",
+      "params": [
+        {
+          "name": "spike_factor",
+          "default": 3,
+          "doc": "times the baseline rate that fires"
+        },
+        {
+          "name": "window_minutes",
+          "default": 10,
+          "doc": "minutes of the current window"
+        },
+        {
+          "name": "baseline_minutes",
+          "default": 60,
+          "doc": "minutes before the window that set the baseline rate"
+        },
+        {
+          "name": "min_errors",
+          "default": 10,
+          "doc": "fewer errors than this in the window never fire"
+        }
+      ]
+    },
+    {
+      "id": "frontend-lcp-poor",
+      "alert": "FrontendLCPPoor",
+      "title": "Frontend Largest Contentful Paint p75 is poor",
+      "severity": "info",
+      "for": "10m",
+      "interval": "5m",
+      "signal": "traces",
+      "params": [
+        {
+          "name": "threshold_ms",
+          "default": 4000,
+          "doc": "p75 LCP in milliseconds that fires (Core Web Vitals call above 4000 poor)"
+        },
+        {
+          "name": "window_minutes",
+          "default": 30,
+          "doc": "minutes the percentile is computed over"
+        },
+        {
+          "name": "min_samples",
+          "default": 100,
+          "doc": "fewer LCP measurements than this in the window never fire"
+        }
+      ]
+    },
+    {
+      "id": "new-issue",
+      "alert": "NewIssue",
+      "title": "A new issue appeared",
+      "severity": "warning",
+      "for": "0s",
+      "interval": "1m",
+      "signal": "platform",
+      "params": [
+        {
+          "name": "client_timeout_min_sessions",
+          "default": 2,
+          "doc": "distinct browser sessions a client-side timeout issue (a request the browser gave up on, or a connection stall) must reach before NewIssue fires for it; the issue itself opens at once. 1 pages on first sight like any other issue"
+        }
+      ]
+    },
+    {
+      "id": "issue-regressed",
+      "alert": "IssueRegressed",
+      "title": "A resolved issue came back in a later release",
+      "severity": "warning",
+      "for": "0s",
+      "interval": "1m",
+      "signal": "platform",
+      "params": []
+    },
+    {
+      "id": "issue-spike",
+      "alert": "IssueSpike",
+      "title": "An issue's error rate is spiking against its previous day",
+      "severity": "warning",
+      "for": "0s",
+      "interval": "5m",
+      "signal": "platform",
+      "params": []
+    },
+    {
+      "id": "uptime-check-failing",
+      "alert": "UptimeCheckFailing",
+      "title": "An uptime check failed several probes in a row (warning), then many (critical)",
+      "severity": "warning",
+      "for": "0s",
+      "interval": "1m",
+      "signal": "metrics",
+      "requires": "metrics",
+      "alert_names": [
+        "UptimeCheckDown"
+      ],
+      "params": [
+        {
+          "name": "failures",
+          "default": 3,
+          "doc": "consecutive failed probes that raise UptimeCheckFailing (warning)"
+        },
+        {
+          "name": "critical_failures",
+          "default": 10,
+          "doc": "consecutive failed probes that raise UptimeCheckDown (critical) instead"
+        },
+        {
+          "name": "window_minutes",
+          "default": 30,
+          "doc": "minutes of probes considered; keep it above failures times the check's interval"
+        }
+      ]
+    },
+    {
+      "id": "certificate-expiring",
+      "alert": "CertificateExpiring",
+      "title": "A probed certificate expires within 14 days (warning) or 3 days (critical)",
+      "severity": "warning",
+      "for": "10m",
+      "interval": "5m",
+      "signal": "metrics",
+      "requires": "metrics",
+      "alert_names": [
+        "CertificateExpiringSoon"
+      ],
+      "params": [
+        {
+          "name": "warn_days",
+          "default": 14,
+          "doc": "days to expiry at or below which CertificateExpiring (warning) fires"
+        },
+        {
+          "name": "critical_days",
+          "default": 3,
+          "doc": "days to expiry at or below which CertificateExpiringSoon (critical) fires instead, an expired certificate included"
+        },
+        {
+          "name": "window_minutes",
+          "default": 30,
+          "doc": "minutes of probes considered"
+        }
+      ]
+    },
+    {
+      "id": "telemetry-target-down",
+      "alert": "\u003cService\u003eTargetDown",
+      "title": "A declared telemetry target's scrape keeps failing (up = 0)",
+      "severity": "warning",
+      "for": "5m",
+      "interval": "1m",
+      "signal": "metrics",
+      "requires": "metrics",
+      "params": [
+        {
+          "name": "window_minutes",
+          "default": 10,
+          "doc": "minutes back the newest scrape result of each endpoint is looked for; keep it above the scrape interval"
+        }
+      ]
+    },
+    {
+      "id": "telemetry-check-failing",
+      "alert": "\u003cService\u003eCheckFailing",
+      "title": "A declared telemetry check has not succeeded for 5 minutes",
+      "severity": "warning",
+      "for": "5m",
+      "interval": "1m",
+      "signal": "metrics",
+      "requires": "metrics",
+      "params": [
+        {
+          "name": "window_minutes",
+          "default": 5,
+          "doc": "minutes of probes considered: the check fires when none of them succeeded"
+        }
+      ]
+    },
+    {
+      "id": "deploy-failed",
+      "alert": "DeployFailed",
+      "title": "A promoted release did not converge",
+      "severity": "critical",
+      "for": "5m",
+      "interval": "1m",
+      "signal": "platform",
+      "params": []
+    },
+    {
+      "id": "observability-quota",
+      "alert": "ObservabilityQuotaOver100",
+      "title": "Observability usage is at or over its monthly allowance (warning from 100%, critical from 150%)",
+      "severity": "warning",
+      "for": "0s",
+      "interval": "1m",
+      "signal": "platform",
+      "alert_names": [
+        "ObservabilityQuotaOver150"
+      ],
+      "params": []
+    }
+  ]
+}

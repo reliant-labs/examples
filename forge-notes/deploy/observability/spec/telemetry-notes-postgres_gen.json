@@ -1,0 +1,855 @@
+{
+  "version": "forge.dashboard-parts/v2",
+  "service": "notes-postgres",
+  "dashboards": [
+    {
+      "sections": [
+        {
+          "id": "collection",
+          "title": "Collection"
+        },
+        {
+          "id": "resources",
+          "title": "Resources"
+        },
+        {
+          "id": "logs",
+          "title": "Logs"
+        },
+        {
+          "id": "checks",
+          "title": "Checks"
+        }
+      ],
+      "id": "telemetry-notes-postgres",
+      "title": "notes: notes-postgres",
+      "description": "Declared telemetry for notes-postgres, a system forge did not build (forge.Telemetry): collection health, CPU, memory and restarts, log volume and errors, check status. Signal-generic: what its own series mean is drawn in the dashboards the Telemetry declares.",
+      "group": "platform",
+      "tags": [
+        "telemetry",
+        "metrics",
+        "checks"
+      ],
+      "filters": [
+        {
+          "id": "env",
+          "label": "deployment.environment.name",
+          "field": "deployment.environment.name"
+        }
+      ],
+      "annotations": [
+        {
+          "source": "releases",
+          "label": "Releases"
+        }
+      ],
+      "panels": [
+        {
+          "section": "collection",
+          "id": "scrape-up",
+          "title": "Scrape up",
+          "description": "1 when the endpoint's last scrape succeeded, 0 when it failed: the target is down, the scrape timed out, or it returned more samples than its sample_limit. One line per scraped endpoint (service.instance.id).",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "up",
+              "agg": "min",
+              "field": "up",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "resource.attr.service.instance.id"
+          ],
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "collection",
+          "id": "scrape-samples",
+          "title": "Samples per scrape",
+          "description": "Samples each scrape returned, and the ones kept after the allow/deny lists. A scrape over its sample_limit (2000) fails and stores nothing.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "scraped",
+              "agg": "max",
+              "field": "scrape_samples_scraped",
+              "metricType": "gauge"
+            },
+            {
+              "label": "kept",
+              "agg": "max",
+              "field": "scrape_samples_post_metric_relabeling",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "collection",
+          "id": "scrape-duration",
+          "title": "Scrape duration",
+          "description": "How long each scrape took; one near its timeout is about to fail.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "duration",
+              "agg": "max",
+              "field": "scrape_duration_seconds",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "resource.attr.service.instance.id"
+          ],
+          "unit": "s",
+          "width": 24,
+          "height": 7
+        },
+        {
+          "section": "resources",
+          "id": "cpu-usage",
+          "title": "CPU usage",
+          "description": "Average CPU cores used per container, one line per workload.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "cpu",
+              "agg": "avg",
+              "field": "container.cpu.usage",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "resource.attr.k8s.workload.name"
+          ],
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "resources",
+          "id": "memory-working-set",
+          "title": "Memory working set",
+          "description": "Average working-set bytes per container, one line per workload.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "memory",
+              "agg": "avg",
+              "field": "container.memory.working_set",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "resource.attr.k8s.workload.name"
+          ],
+          "unit": "bytes",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "resources",
+          "id": "restarts",
+          "title": "Container restarts",
+          "description": "The highest restart count among each workload's containers; a step is a restart.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "restarts",
+              "agg": "max",
+              "field": "k8s.container.restarts",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "resource.attr.k8s.workload.name"
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "resources",
+          "id": "restarts-by-exit-reason",
+          "title": "Restarts by last exit reason",
+          "description": "The same restart count split by why the container last terminated (OOMKilled, Error, Completed, ...).",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "restarts",
+              "agg": "max",
+              "field": "k8s.container.restarts",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "metric.attr.k8s.container.last_terminated_reason"
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "logs",
+          "id": "log-volume",
+          "title": "Log volume by severity",
+          "description": "Log records per time bucket, one line per severity. A system whose lines are not parsed reports them unspecified; Telemetry.logs maps its levels.",
+          "kind": "line",
+          "signal": "logs",
+          "series": [
+            {
+              "label": "records",
+              "agg": "count"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "log.severity"
+          ],
+          "unit": "count",
+          "width": 24,
+          "height": 7
+        },
+        {
+          "section": "logs",
+          "id": "error-logs",
+          "title": "Error lines",
+          "kind": "search",
+          "signal": "logs",
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            },
+            {
+              "field": "log.severity",
+              "op": "eq",
+              "value": "error"
+            }
+          ],
+          "columns": [
+            "timestamp",
+            "service.name",
+            "log.severity",
+            "log.body"
+          ],
+          "width": 24,
+          "height": 8
+        },
+        {
+          "section": "logs",
+          "id": "logs",
+          "title": "Recent lines",
+          "kind": "search",
+          "signal": "logs",
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "columns": [
+            "timestamp",
+            "service.name",
+            "log.severity",
+            "log.body"
+          ],
+          "width": 24,
+          "height": 8
+        },
+        {
+          "section": "checks",
+          "id": "tcp-checks",
+          "title": "TCP checks",
+          "description": "1 when the collector connected, 0 when it could not. One line per endpoint.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "connected",
+              "agg": "min",
+              "field": "tcpcheck.status",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "metric.attr.tcpcheck.endpoint"
+          ],
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "checks",
+          "id": "check-latency",
+          "title": "Check latency",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "tcp",
+              "agg": "avg",
+              "field": "tcpcheck.duration",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "unit": "ms",
+          "width": 24,
+          "height": 7
+        }
+      ]
+    },
+    {
+      "sections": [
+        {
+          "id": "health",
+          "title": "Health"
+        },
+        {
+          "id": "load",
+          "title": "Load"
+        },
+        {
+          "id": "durability",
+          "title": "Replication, WAL and backups"
+        }
+      ],
+      "id": "notes-postgres",
+      "title": "Postgres: notes",
+      "description": "The CloudNativePG instances of the managed database notes: availability, connections, size, throughput, replication, WAL archiving and backups. Its logs, scrape health and resources are on its system dashboard.",
+      "group": "platform",
+      "tags": [
+        "postgres",
+        "database"
+      ],
+      "filters": [
+        {
+          "id": "env",
+          "label": "deployment.environment.name",
+          "field": "deployment.environment.name"
+        }
+      ],
+      "panels": [
+        {
+          "section": "health",
+          "id": "up",
+          "title": "Postgres up",
+          "description": "1 while the instance accepts queries, 0 when it does not. One line per instance.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "up",
+              "agg": "min",
+              "field": "cnpg_collector_up",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "resource.attr.service.instance.id"
+          ],
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "health",
+          "id": "connections",
+          "title": "Connections by state",
+          "description": "Backends by state (active, idle, idle in transaction). Idle in transaction holds locks and blocks vacuum.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "backends",
+              "agg": "sum",
+              "field": "cnpg_backends_total",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "metric.attr.state"
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "health",
+          "id": "waiting",
+          "title": "Backends waiting on locks",
+          "description": "Queries blocked behind another backend's lock.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "waiting",
+              "agg": "max",
+              "field": "cnpg_backends_waiting_total",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "health",
+          "id": "longest-tx",
+          "title": "Longest open transaction",
+          "description": "The oldest transaction still open. Long ones hold back vacuum and bloat the tables.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "seconds",
+              "agg": "max",
+              "field": "cnpg_backends_max_tx_duration_seconds",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "unit": "s",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "load",
+          "id": "size",
+          "title": "Database size",
+          "description": "Disk used by each database.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "size",
+              "agg": "max",
+              "field": "cnpg_pg_database_size_bytes",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "metric.attr.datname"
+          ],
+          "unit": "bytes",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "load",
+          "id": "transactions",
+          "title": "Transactions / s",
+          "description": "Commits and rollbacks per second, all databases.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "commits",
+              "agg": "rate",
+              "field": "cnpg_pg_stat_database_xact_commit",
+              "metricType": "sum"
+            },
+            {
+              "label": "rollbacks",
+              "agg": "rate",
+              "field": "cnpg_pg_stat_database_xact_rollback",
+              "metricType": "sum"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "load",
+          "id": "deadlocks",
+          "title": "Deadlocks / s",
+          "description": "Deadlocks Postgres detected and broke by cancelling a transaction.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "deadlocks",
+              "agg": "rate",
+              "field": "cnpg_pg_stat_database_deadlocks",
+              "metricType": "sum"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "metric.attr.datname"
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "load",
+          "id": "xid-age",
+          "title": "Transaction ID age",
+          "description": "Transactions since each database's oldest unfrozen XID. Postgres stops accepting writes near 2 billion; autovacuum should keep it far below.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "xid age",
+              "agg": "max",
+              "field": "cnpg_pg_database_xid_age",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "metric.attr.datname"
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "durability",
+          "id": "replication-lag",
+          "title": "Replication lag",
+          "description": "How far each replica's replay is behind the primary. 0 on the primary.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "lag",
+              "agg": "max",
+              "field": "cnpg_pg_replication_lag",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "resource.attr.service.instance.id"
+          ],
+          "unit": "s",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "durability",
+          "id": "replicas",
+          "title": "Streaming replicas",
+          "description": "Replicas streaming from the primary.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "replicas",
+              "agg": "max",
+              "field": "cnpg_pg_replication_streaming_replicas",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "durability",
+          "id": "wal-size",
+          "title": "WAL on disk",
+          "description": "The size of pg_wal. It grows when archiving or a replica falls behind.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "wal",
+              "agg": "max",
+              "field": "cnpg_collector_pg_wal",
+              "metricType": "gauge",
+              "where": [
+                {
+                  "field": "metric.attr.value",
+                  "op": "eq",
+                  "value": "size"
+                }
+              ]
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "resource.attr.service.instance.id"
+          ],
+          "unit": "bytes",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "durability",
+          "id": "wal-ready",
+          "title": "WAL waiting to be archived",
+          "description": "Segments marked ready but not yet archived. A growing count means archiving is failing or slow.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "ready",
+              "agg": "max",
+              "field": "cnpg_collector_pg_wal_archive_status",
+              "metricType": "gauge",
+              "where": [
+                {
+                  "field": "metric.attr.value",
+                  "op": "eq",
+                  "value": "ready"
+                }
+              ]
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "groupBy": [
+            "resource.attr.service.instance.id"
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "durability",
+          "id": "archive-failures",
+          "title": "WAL archive failures / s",
+          "description": "Failed attempts to archive a WAL segment to the backup store.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "failed",
+              "agg": "rate",
+              "field": "cnpg_pg_stat_archiver_failed_count",
+              "metricType": "sum"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "unit": "count",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "durability",
+          "id": "archive-age",
+          "title": "Time since last archived WAL",
+          "description": "Seconds since a WAL segment was last archived. -1 before the first.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "seconds",
+              "agg": "max",
+              "field": "cnpg_pg_stat_archiver_seconds_since_last_archival",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "unit": "s",
+          "width": 12,
+          "height": 7
+        },
+        {
+          "section": "durability",
+          "id": "last-backup",
+          "title": "Last backup",
+          "description": "Unix time of the newest base backup in the store, as the Barman Cloud plugin reports it (the instance's own series on older operators). It steps up at every scheduled backup; a flat line is a backup that stopped.",
+          "kind": "line",
+          "signal": "metrics",
+          "series": [
+            {
+              "label": "plugin",
+              "agg": "max",
+              "field": "barman_cloud_cloudnative_pg_io_last_available_backup_timestamp",
+              "metricType": "gauge"
+            },
+            {
+              "label": "instance",
+              "agg": "max",
+              "field": "cnpg_collector_last_available_backup_timestamp",
+              "metricType": "gauge"
+            }
+          ],
+          "where": [
+            {
+              "field": "service.name",
+              "op": "eq",
+              "value": "notes-postgres"
+            }
+          ],
+          "unit": "s",
+          "width": 24,
+          "height": 7
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+module example.com/notes/gen
+
+go 1.27.4
+
+require (
+	connectrpc.com/connect/v2 v2.0.2
+	// The generated *.pb.go in this module blank-import forge's shared
+	// forgepb package (proto/forge/v1/forge.proto declares
+	// `option go_package = ".../forgepb;forgepb"`) instead of a local
+	// gen/forge/v1 copy, so the descriptor "forge/v1/forge.proto" registers
+	// exactly once across the binary. It resolves from the module proxy like
+	// any other published dependency, pinned to the same version the root
+	// module requires. (Maintainers building against unpublished forge/pkg
+	// bridge both modules with a gitignored go.work — never a committed
+	// replace.)
+	github.com/reliant-labs/forge v1.11.0
+	google.golang.org/protobuf v1.36.12
+)

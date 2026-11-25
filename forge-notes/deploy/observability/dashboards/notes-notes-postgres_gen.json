@@ -1,0 +1,477 @@
+{
+  "name": "Postgres: notes",
+  "tags": [
+    "forge",
+    "generated"
+  ],
+  "tiles": [
+    {
+      "id": "t-up",
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Postgres up",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "min",
+            "valueExpression": "",
+            "alias": "up",
+            "metricName": "cnpg_collector_up",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "groupBy": "ResourceAttributes['service.instance.id']",
+        "granularity": "auto"
+      }
+    },
+    {
+      "id": "t-connections",
+      "x": 12,
+      "y": 0,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Connections by state",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "sum",
+            "valueExpression": "",
+            "alias": "backends",
+            "metricName": "cnpg_backends_total",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "groupBy": "Attributes['state']",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 0,
+          "thousandSeparated": true
+        }
+      }
+    },
+    {
+      "id": "t-waiting",
+      "x": 0,
+      "y": 7,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Backends waiting on locks",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "alias": "waiting",
+            "metricName": "cnpg_backends_waiting_total",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 0,
+          "thousandSeparated": true
+        }
+      }
+    },
+    {
+      "id": "t-longest-tx",
+      "x": 12,
+      "y": 7,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Longest open transaction",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "alias": "seconds",
+            "metricName": "cnpg_backends_max_tx_duration_seconds",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 1,
+          "thousandSeparated": true,
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": "t-size",
+      "x": 0,
+      "y": 14,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Database size",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "alias": "size",
+            "metricName": "cnpg_pg_database_size_bytes",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "groupBy": "Attributes['datname']",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "byte",
+          "mantissa": 1
+        }
+      }
+    },
+    {
+      "id": "t-transactions",
+      "x": 12,
+      "y": 14,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Transactions / s (per bucket: HyperDX has no per-second rate)",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "increase",
+            "valueExpression": "",
+            "alias": "commits",
+            "metricName": "cnpg_pg_stat_database_xact_commit",
+            "metricType": "sum"
+          },
+          {
+            "aggFn": "increase",
+            "valueExpression": "",
+            "alias": "rollbacks",
+            "metricName": "cnpg_pg_stat_database_xact_rollback",
+            "metricType": "sum"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 0,
+          "thousandSeparated": true
+        }
+      }
+    },
+    {
+      "id": "t-deadlocks",
+      "x": 0,
+      "y": 21,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Deadlocks / s (per bucket: HyperDX has no per-second rate)",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "increase",
+            "valueExpression": "",
+            "alias": "deadlocks",
+            "metricName": "cnpg_pg_stat_database_deadlocks",
+            "metricType": "sum"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "groupBy": "Attributes['datname']",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 0,
+          "thousandSeparated": true
+        }
+      }
+    },
+    {
+      "id": "t-xid-age",
+      "x": 12,
+      "y": 21,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Transaction ID age",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "alias": "xid age",
+            "metricName": "cnpg_pg_database_xid_age",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "groupBy": "Attributes['datname']",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 0,
+          "thousandSeparated": true
+        }
+      }
+    },
+    {
+      "id": "t-replication-lag",
+      "x": 0,
+      "y": 28,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Replication lag",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "alias": "lag",
+            "metricName": "cnpg_pg_replication_lag",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "groupBy": "ResourceAttributes['service.instance.id']",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 1,
+          "thousandSeparated": true,
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": "t-replicas",
+      "x": 12,
+      "y": 28,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Streaming replicas",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "alias": "replicas",
+            "metricName": "cnpg_pg_replication_streaming_replicas",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 0,
+          "thousandSeparated": true
+        }
+      }
+    },
+    {
+      "id": "t-wal-size",
+      "x": 0,
+      "y": 35,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "WAL on disk",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "aggCondition": "Attributes['value'] = 'size'",
+            "aggConditionLanguage": "sql",
+            "alias": "wal",
+            "metricName": "cnpg_collector_pg_wal",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "groupBy": "ResourceAttributes['service.instance.id']",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "byte",
+          "mantissa": 1
+        }
+      }
+    },
+    {
+      "id": "t-wal-ready",
+      "x": 12,
+      "y": 35,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "WAL waiting to be archived",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "aggCondition": "Attributes['value'] = 'ready'",
+            "aggConditionLanguage": "sql",
+            "alias": "ready",
+            "metricName": "cnpg_collector_pg_wal_archive_status",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "groupBy": "ResourceAttributes['service.instance.id']",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 0,
+          "thousandSeparated": true
+        }
+      }
+    },
+    {
+      "id": "t-archive-failures",
+      "x": 0,
+      "y": 42,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "WAL archive failures / s (per bucket: HyperDX has no per-second rate)",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "increase",
+            "valueExpression": "",
+            "alias": "failed",
+            "metricName": "cnpg_pg_stat_archiver_failed_count",
+            "metricType": "sum"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 0,
+          "thousandSeparated": true
+        }
+      }
+    },
+    {
+      "id": "t-archive-age",
+      "x": 12,
+      "y": 42,
+      "w": 12,
+      "h": 7,
+      "config": {
+        "name": "Time since last archived WAL",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "alias": "seconds",
+            "metricName": "cnpg_pg_stat_archiver_seconds_since_last_archival",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 1,
+          "thousandSeparated": true,
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": "t-last-backup",
+      "x": 0,
+      "y": 49,
+      "w": 24,
+      "h": 7,
+      "config": {
+        "name": "Last backup",
+        "source": "Metrics",
+        "displayType": "line",
+        "select": [
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "alias": "plugin",
+            "metricName": "barman_cloud_cloudnative_pg_io_last_available_backup_timestamp",
+            "metricType": "gauge"
+          },
+          {
+            "aggFn": "max",
+            "valueExpression": "",
+            "alias": "instance",
+            "metricName": "cnpg_collector_last_available_backup_timestamp",
+            "metricType": "gauge"
+          }
+        ],
+        "where": "ServiceName = 'notes-postgres'",
+        "whereLanguage": "sql",
+        "granularity": "auto",
+        "numberFormat": {
+          "output": "number",
+          "mantissa": 1,
+          "thousandSeparated": true,
+          "unit": "s"
+        }
+      }
+    }
+  ],
+  "filters": [
+    {
+      "id": "filter-env",
+      "type": "QUERY_EXPRESSION",
+      "name": "deployment.environment.name",
+      "expression": "ResourceAttributes['deployment.environment.name']",
+      "source": "Traces",
+      "whereLanguage": "sql"
+    }
+  ]
+}

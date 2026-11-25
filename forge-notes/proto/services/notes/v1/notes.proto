@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package services.notes.v1;
+
+import "forge/v1/forge.proto";
+
+option go_package = "example.com/notes/gen/services/notes/v1;notesv1";
+
+// NotesService defines the notes service RPCs.
+service NotesService {
+  option (forge.v1.service) = {
+    name: "NotesService"
+    version: "1.0.0"
+    description: "notes service"
+  };
+
+  // TODO: Add your RPC methods here.
+}

@@ -1,0 +1,39 @@
+{
+  "name": "notes",
+  "image": "mcr.microsoft.com/devcontainers/go:1.27-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": false
+    }
+  },
+  "postCreateCommand": "bash scripts/bootstrap.sh",
+  "forwardPorts": [8080, 5432, 16686],
+  "portsAttributes": {
+    "8080": { "label": "app" },
+    "5432": { "label": "postgres" },
+    "16686": { "label": "jaeger-ui" }
+  },
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "bufbuild.vscode-buf",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "ms-azuretools.vscode-docker",
+        "task.vscode-task",
+        "kcl.vscode-kcl",
+        "zxh404.vscode-proto3"
+      ]
+    }
+  }
+}
