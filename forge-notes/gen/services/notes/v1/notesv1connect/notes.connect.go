@@ -6,7 +6,9 @@ package notesv1connect
 
 import (
 	connect "connectrpc.com/connect/v2"
-	_ "example.com/notes/gen/services/notes/v1"
+	context "context"
+	v1 "example.com/notes/gen/services/notes/v1"
+	sync "sync"
 )
 
 const (
@@ -14,8 +16,74 @@ const (
 	NotesServiceName = "services.notes.v1.NotesService"
 )
 
+// These constants are the procedure names of the RPCs defined in this package. They're exposed at
+// runtime as Spec.Procedure and as the final two segments of the HTTP route.
+//
+// Note that these are different from the fully-qualified method names used by
+// google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
+// reflection-formatted method names, remove the leading slash and convert the remaining slash to a
+// period.
+const (
+	// NotesServiceCreateNoteProcedure is the procedure name of the NotesService's CreateNote RPC.
+	NotesServiceCreateNoteProcedure = "/services.notes.v1.NotesService/CreateNote"
+	// NotesServiceGetNoteProcedure is the procedure name of the NotesService's GetNote RPC.
+	NotesServiceGetNoteProcedure = "/services.notes.v1.NotesService/GetNote"
+	// NotesServiceUpdateNoteProcedure is the procedure name of the NotesService's UpdateNote RPC.
+	NotesServiceUpdateNoteProcedure = "/services.notes.v1.NotesService/UpdateNote"
+	// NotesServiceDeleteNoteProcedure is the procedure name of the NotesService's DeleteNote RPC.
+	NotesServiceDeleteNoteProcedure = "/services.notes.v1.NotesService/DeleteNote"
+	// NotesServiceListNotesProcedure is the procedure name of the NotesService's ListNotes RPC.
+	NotesServiceListNotesProcedure = "/services.notes.v1.NotesService/ListNotes"
+)
+
+var (
+	notesServiceCreateNoteSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_services_notes_v1_notes_proto.Services().ByName("NotesService").Methods().ByName("CreateNote"),
+			Procedure:  NotesServiceCreateNoteProcedure,
+		}
+	})
+	notesServiceGetNoteSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType:       connect.StreamTypeUnary,
+			Schema:           v1.File_services_notes_v1_notes_proto.Services().ByName("NotesService").Methods().ByName("GetNote"),
+			Procedure:        NotesServiceGetNoteProcedure,
+			IdempotencyLevel: connect.IdempotencyNoSideEffects,
+		}
+	})
+	notesServiceUpdateNoteSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_services_notes_v1_notes_proto.Services().ByName("NotesService").Methods().ByName("UpdateNote"),
+			Procedure:  NotesServiceUpdateNoteProcedure,
+		}
+	})
+	notesServiceDeleteNoteSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType: connect.StreamTypeUnary,
+			Schema:     v1.File_services_notes_v1_notes_proto.Services().ByName("NotesService").Methods().ByName("DeleteNote"),
+			Procedure:  NotesServiceDeleteNoteProcedure,
+		}
+	})
+	notesServiceListNotesSpec = sync.OnceValue(func() connect.Spec {
+		return connect.Spec{
+			StreamType:       connect.StreamTypeUnary,
+			Schema:           v1.File_services_notes_v1_notes_proto.Services().ByName("NotesService").Methods().ByName("ListNotes"),
+			Procedure:        NotesServiceListNotesProcedure,
+			IdempotencyLevel: connect.IdempotencyNoSideEffects,
+		}
+	})
+)
+
 // NotesServiceClient is a client for the services.notes.v1.NotesService service.
 type NotesServiceClient interface {
+	// Note CRUD — quintet completed by forge (one-time); the wire contract is yours.
+	CreateNote(context.Context, *v1.CreateNoteRequest) (*v1.CreateNoteResponse, error)
+	GetNote(context.Context, *v1.GetNoteRequest) (*v1.GetNoteResponse, error)
+	UpdateNote(context.Context, *v1.UpdateNoteRequest) (*v1.UpdateNoteResponse, error)
+	DeleteNote(context.Context, *v1.DeleteNoteRequest) (*v1.DeleteNoteResponse, error)
+	ListNotes(context.Context, *v1.ListNotesRequest) (*v1.ListNotesResponse, error)
 }
 
 // NewNotesServiceClient constructs a client for the services.notes.v1.NotesService service.
@@ -26,19 +94,152 @@ func NewNotesServiceClient(client *connect.Client) NotesServiceClient {
 
 // NotesServiceHandler is an implementation of the services.notes.v1.NotesService service.
 type NotesServiceHandler interface {
+	// Note CRUD — quintet completed by forge (one-time); the wire contract is yours.
+	CreateNote(context.Context, *v1.CreateNoteRequest) (*v1.CreateNoteResponse, error)
+	GetNote(context.Context, *v1.GetNoteRequest) (*v1.GetNoteResponse, error)
+	UpdateNote(context.Context, *v1.UpdateNoteRequest) (*v1.UpdateNoteResponse, error)
+	DeleteNote(context.Context, *v1.DeleteNoteRequest) (*v1.DeleteNoteResponse, error)
+	ListNotes(context.Context, *v1.ListNotesRequest) (*v1.ListNotesResponse, error)
 }
 
 // RegisterNotesServiceHandler registers svc as the services.notes.v1.NotesService implementation on
 // server.
 func RegisterNotesServiceHandler(server *connect.Server, svc NotesServiceHandler) {
-	server.Register()
+	adapter := notesServiceHandler{svc: svc}
+	server.Register(
+		connect.Method{Spec: notesServiceCreateNoteSpec(), Handler: adapter.createNote},
+		connect.Method{Spec: notesServiceGetNoteSpec(), Handler: adapter.getNote},
+		connect.Method{Spec: notesServiceUpdateNoteSpec(), Handler: adapter.updateNote},
+		connect.Method{Spec: notesServiceDeleteNoteSpec(), Handler: adapter.deleteNote},
+		connect.Method{Spec: notesServiceListNotesSpec(), Handler: adapter.listNotes},
+	)
 }
 
 // UnimplementedNotesServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedNotesServiceHandler struct{}
 
+func (UnimplementedNotesServiceHandler) CreateNote(context.Context, *v1.CreateNoteRequest) (*v1.CreateNoteResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "services.notes.v1.NotesService.CreateNote is not implemented")
+}
+
+func (UnimplementedNotesServiceHandler) GetNote(context.Context, *v1.GetNoteRequest) (*v1.GetNoteResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "services.notes.v1.NotesService.GetNote is not implemented")
+}
+
+func (UnimplementedNotesServiceHandler) UpdateNote(context.Context, *v1.UpdateNoteRequest) (*v1.UpdateNoteResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "services.notes.v1.NotesService.UpdateNote is not implemented")
+}
+
+func (UnimplementedNotesServiceHandler) DeleteNote(context.Context, *v1.DeleteNoteRequest) (*v1.DeleteNoteResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "services.notes.v1.NotesService.DeleteNote is not implemented")
+}
+
+func (UnimplementedNotesServiceHandler) ListNotes(context.Context, *v1.ListNotesRequest) (*v1.ListNotesResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, "services.notes.v1.NotesService.ListNotes is not implemented")
+}
+
 type notesServiceClient struct {
 	client *connect.Client
 }
 
+func (c *notesServiceClient) CreateNote(ctx context.Context, req *v1.CreateNoteRequest) (*v1.CreateNoteResponse, error) {
+	var res v1.CreateNoteResponse
+	if err := c.client.CallUnary(ctx, notesServiceCreateNoteSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *notesServiceClient) GetNote(ctx context.Context, req *v1.GetNoteRequest) (*v1.GetNoteResponse, error) {
+	var res v1.GetNoteResponse
+	if err := c.client.CallUnary(ctx, notesServiceGetNoteSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *notesServiceClient) UpdateNote(ctx context.Context, req *v1.UpdateNoteRequest) (*v1.UpdateNoteResponse, error) {
+	var res v1.UpdateNoteResponse
+	if err := c.client.CallUnary(ctx, notesServiceUpdateNoteSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *notesServiceClient) DeleteNote(ctx context.Context, req *v1.DeleteNoteRequest) (*v1.DeleteNoteResponse, error) {
+	var res v1.DeleteNoteResponse
+	if err := c.client.CallUnary(ctx, notesServiceDeleteNoteSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+func (c *notesServiceClient) ListNotes(ctx context.Context, req *v1.ListNotesRequest) (*v1.ListNotesResponse, error) {
+	var res v1.ListNotesResponse
+	if err := c.client.CallUnary(ctx, notesServiceListNotesSpec(), req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
 type notesServiceHandler struct{ svc NotesServiceHandler }
+
+func (h notesServiceHandler) createNote(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.CreateNoteRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.CreateNote(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h notesServiceHandler) getNote(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.GetNoteRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.GetNote(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h notesServiceHandler) updateNote(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.UpdateNoteRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.UpdateNote(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h notesServiceHandler) deleteNote(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.DeleteNoteRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.DeleteNote(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}
+
+func (h notesServiceHandler) listNotes(ctx context.Context, _ connect.Spec, stream connect.ServerStream) error {
+	var req v1.ListNotesRequest
+	if err := stream.Receive(&req); err != nil {
+		return err
+	}
+	res, err := h.svc.ListNotes(ctx, &req)
+	if err != nil {
+		return err
+	}
+	return stream.Send(res)
+}

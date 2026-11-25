@@ -2,15 +2,274 @@
 // @generated from file services/notes/v1/notes.proto (package services.notes.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_forge_v1_forge } from "../../../forge/v1/forge_pb.js";
+import type { FieldMask, Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_field_mask, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file services/notes/v1/notes.proto.
  */
 export const file_services_notes_v1_notes: GenFile = /*@__PURE__*/
-  fileDesc("Ch1zZXJ2aWNlcy9ub3Rlcy92MS9ub3Rlcy5wcm90bxIRc2VydmljZXMubm90ZXMudjEyOAoMTm90ZXNTZXJ2aWNlGiiCtRgkCgxOb3Rlc1NlcnZpY2USBTEuMC4wGg1ub3RlcyBzZXJ2aWNlQjFaL2V4YW1wbGUuY29tL25vdGVzL2dlbi9zZXJ2aWNlcy9ub3Rlcy92MTtub3Rlc3YxYgZwcm90bzM", [file_forge_v1_forge]);
+  fileDesc("Ch1zZXJ2aWNlcy9ub3Rlcy92MS9ub3Rlcy5wcm90bxIRc2VydmljZXMubm90ZXMudjEijwEKBE5vdGUSDQoFdGl0bGUYAiABKAkSDAoEYm9keRgDIAEoCRIKCgJpZBgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIwChFDcmVhdGVOb3RlUmVxdWVzdBINCgV0aXRsZRgBIAEoCRIMCgRib2R5GAIgASgJIjsKEkNyZWF0ZU5vdGVSZXNwb25zZRIlCgRub3RlGAEgASgLMhcuc2VydmljZXMubm90ZXMudjEuTm90ZSIcCg5HZXROb3RlUmVxdWVzdBIKCgJpZBgBIAEoCSI4Cg9HZXROb3RlUmVzcG9uc2USJQoEbm90ZRgBIAEoCzIXLnNlcnZpY2VzLm5vdGVzLnYxLk5vdGUiawoRVXBkYXRlTm90ZVJlcXVlc3QSJQoEbm90ZRgBIAEoCzIXLnNlcnZpY2VzLm5vdGVzLnYxLk5vdGUSLwoLdXBkYXRlX21hc2sYAiABKAsyGi5nb29nbGUucHJvdG9idWYuRmllbGRNYXNrIjsKElVwZGF0ZU5vdGVSZXNwb25zZRIlCgRub3RlGAEgASgLMhcuc2VydmljZXMubm90ZXMudjEuTm90ZSIfChFEZWxldGVOb3RlUmVxdWVzdBIKCgJpZBgBIAEoCSIUChJEZWxldGVOb3RlUmVzcG9uc2UifwoQTGlzdE5vdGVzUmVxdWVzdBIRCglwYWdlX3NpemUYASABKAUSEgoKcGFnZV90b2tlbhgCIAEoCRITCgZzZWFyY2gYAyABKAlIAIgBARIQCghvcmRlcl9ieRgEIAEoCRISCgpkZXNjZW5kaW5nGAUgASgIQgkKB19zZWFyY2giaQoRTGlzdE5vdGVzUmVzcG9uc2USJgoFbm90ZXMYASADKAsyFy5zZXJ2aWNlcy5ub3Rlcy52MS5Ob3RlEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCRITCgt0b3RhbF9jb3VudBgDIAEoBTKnBAoMTm90ZXNTZXJ2aWNlEmMKCkNyZWF0ZU5vdGUSJC5zZXJ2aWNlcy5ub3Rlcy52MS5DcmVhdGVOb3RlUmVxdWVzdBolLnNlcnZpY2VzLm5vdGVzLnYxLkNyZWF0ZU5vdGVSZXNwb25zZSIIorsYBAgBKAESWwoHR2V0Tm90ZRIhLnNlcnZpY2VzLm5vdGVzLnYxLkdldE5vdGVSZXF1ZXN0GiIuc2VydmljZXMubm90ZXMudjEuR2V0Tm90ZVJlc3BvbnNlIgmQAgGiuxgCCAESYwoKVXBkYXRlTm90ZRIkLnNlcnZpY2VzLm5vdGVzLnYxLlVwZGF0ZU5vdGVSZXF1ZXN0GiUuc2VydmljZXMubm90ZXMudjEuVXBkYXRlTm90ZVJlc3BvbnNlIgiiuxgECAEoARJjCgpEZWxldGVOb3RlEiQuc2VydmljZXMubm90ZXMudjEuRGVsZXRlTm90ZVJlcXVlc3QaJS5zZXJ2aWNlcy5ub3Rlcy52MS5EZWxldGVOb3RlUmVzcG9uc2UiCKK7GAQIASgBEmEKCUxpc3ROb3RlcxIjLnNlcnZpY2VzLm5vdGVzLnYxLkxpc3ROb3Rlc1JlcXVlc3QaJC5zZXJ2aWNlcy5ub3Rlcy52MS5MaXN0Tm90ZXNSZXNwb25zZSIJkAIBorsYAggBGiiCtRgkCgxOb3Rlc1NlcnZpY2USBTEuMC4wGg1ub3RlcyBzZXJ2aWNlQjFaL2V4YW1wbGUuY29tL25vdGVzL2dlbi9zZXJ2aWNlcy9ub3Rlcy92MTtub3Rlc3YxYgZwcm90bzM", [file_forge_v1_forge, file_google_protobuf_field_mask, file_google_protobuf_timestamp]);
+
+/**
+ * forge:entity
+ *
+ * @generated from message services.notes.v1.Note
+ */
+export type Note = Message<"services.notes.v1.Note"> & {
+  /**
+   * @generated from field: string title = 2;
+   */
+  title: string;
+
+  /**
+   * @generated from field: string body = 3;
+   */
+  body: string;
+
+  /**
+   * Managed by forge at birth: the identity and lifecycle fields the
+   * migration, the ORM row type, the CRUD envelopes and the frontend
+   * all project. Yours from here — forge never rewrites them.
+   *
+   * @generated from field: string id = 4;
+   */
+  id: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 5;
+   */
+  createdAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 6;
+   */
+  updatedAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message services.notes.v1.Note.
+ * Use `create(NoteSchema)` to create a new message.
+ */
+export const NoteSchema: GenMessage<Note> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 0);
+
+/**
+ * @generated from message services.notes.v1.CreateNoteRequest
+ */
+export type CreateNoteRequest = Message<"services.notes.v1.CreateNoteRequest"> & {
+  /**
+   * @generated from field: string title = 1;
+   */
+  title: string;
+
+  /**
+   * @generated from field: string body = 2;
+   */
+  body: string;
+};
+
+/**
+ * Describes the message services.notes.v1.CreateNoteRequest.
+ * Use `create(CreateNoteRequestSchema)` to create a new message.
+ */
+export const CreateNoteRequestSchema: GenMessage<CreateNoteRequest> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 1);
+
+/**
+ * @generated from message services.notes.v1.CreateNoteResponse
+ */
+export type CreateNoteResponse = Message<"services.notes.v1.CreateNoteResponse"> & {
+  /**
+   * @generated from field: services.notes.v1.Note note = 1;
+   */
+  note?: Note | undefined;
+};
+
+/**
+ * Describes the message services.notes.v1.CreateNoteResponse.
+ * Use `create(CreateNoteResponseSchema)` to create a new message.
+ */
+export const CreateNoteResponseSchema: GenMessage<CreateNoteResponse> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 2);
+
+/**
+ * @generated from message services.notes.v1.GetNoteRequest
+ */
+export type GetNoteRequest = Message<"services.notes.v1.GetNoteRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message services.notes.v1.GetNoteRequest.
+ * Use `create(GetNoteRequestSchema)` to create a new message.
+ */
+export const GetNoteRequestSchema: GenMessage<GetNoteRequest> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 3);
+
+/**
+ * @generated from message services.notes.v1.GetNoteResponse
+ */
+export type GetNoteResponse = Message<"services.notes.v1.GetNoteResponse"> & {
+  /**
+   * @generated from field: services.notes.v1.Note note = 1;
+   */
+  note?: Note | undefined;
+};
+
+/**
+ * Describes the message services.notes.v1.GetNoteResponse.
+ * Use `create(GetNoteResponseSchema)` to create a new message.
+ */
+export const GetNoteResponseSchema: GenMessage<GetNoteResponse> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 4);
+
+/**
+ * @generated from message services.notes.v1.UpdateNoteRequest
+ */
+export type UpdateNoteRequest = Message<"services.notes.v1.UpdateNoteRequest"> & {
+  /**
+   * @generated from field: services.notes.v1.Note note = 1;
+   */
+  note?: Note | undefined;
+
+  /**
+   * @generated from field: google.protobuf.FieldMask update_mask = 2;
+   */
+  updateMask?: FieldMask | undefined;
+};
+
+/**
+ * Describes the message services.notes.v1.UpdateNoteRequest.
+ * Use `create(UpdateNoteRequestSchema)` to create a new message.
+ */
+export const UpdateNoteRequestSchema: GenMessage<UpdateNoteRequest> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 5);
+
+/**
+ * @generated from message services.notes.v1.UpdateNoteResponse
+ */
+export type UpdateNoteResponse = Message<"services.notes.v1.UpdateNoteResponse"> & {
+  /**
+   * @generated from field: services.notes.v1.Note note = 1;
+   */
+  note?: Note | undefined;
+};
+
+/**
+ * Describes the message services.notes.v1.UpdateNoteResponse.
+ * Use `create(UpdateNoteResponseSchema)` to create a new message.
+ */
+export const UpdateNoteResponseSchema: GenMessage<UpdateNoteResponse> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 6);
+
+/**
+ * @generated from message services.notes.v1.DeleteNoteRequest
+ */
+export type DeleteNoteRequest = Message<"services.notes.v1.DeleteNoteRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message services.notes.v1.DeleteNoteRequest.
+ * Use `create(DeleteNoteRequestSchema)` to create a new message.
+ */
+export const DeleteNoteRequestSchema: GenMessage<DeleteNoteRequest> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 7);
+
+/**
+ * @generated from message services.notes.v1.DeleteNoteResponse
+ */
+export type DeleteNoteResponse = Message<"services.notes.v1.DeleteNoteResponse"> & {
+};
+
+/**
+ * Describes the message services.notes.v1.DeleteNoteResponse.
+ * Use `create(DeleteNoteResponseSchema)` to create a new message.
+ */
+export const DeleteNoteResponseSchema: GenMessage<DeleteNoteResponse> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 8);
+
+/**
+ * List filters ARE this request's fields: the query filters on the same fields
+ * declared here. Birth scaffolds a facet for every field it can filter
+ * mechanically — free-text search, each bool, each enum, and each <stem>_id
+ * reference. To filter by something else, add that field HERE and forge wires
+ * it end to end — never fetch a page and filter client-side, which silently
+ * truncates past the page cap. Delete a facet you do not want.
+ *
+ * @generated from message services.notes.v1.ListNotesRequest
+ */
+export type ListNotesRequest = Message<"services.notes.v1.ListNotesRequest"> & {
+  /**
+   * @generated from field: int32 page_size = 1;
+   */
+  pageSize: number;
+
+  /**
+   * @generated from field: string page_token = 2;
+   */
+  pageToken: string;
+
+  /**
+   * @generated from field: optional string search = 3;
+   */
+  search?: string | undefined;
+
+  /**
+   * @generated from field: string order_by = 4;
+   */
+  orderBy: string;
+
+  /**
+   * @generated from field: bool descending = 5;
+   */
+  descending: boolean;
+};
+
+/**
+ * Describes the message services.notes.v1.ListNotesRequest.
+ * Use `create(ListNotesRequestSchema)` to create a new message.
+ */
+export const ListNotesRequestSchema: GenMessage<ListNotesRequest> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 9);
+
+/**
+ * @generated from message services.notes.v1.ListNotesResponse
+ */
+export type ListNotesResponse = Message<"services.notes.v1.ListNotesResponse"> & {
+  /**
+   * @generated from field: repeated services.notes.v1.Note notes = 1;
+   */
+  notes: Note[];
+
+  /**
+   * @generated from field: string next_page_token = 2;
+   */
+  nextPageToken: string;
+
+  /**
+   * @generated from field: int32 total_count = 3;
+   */
+  totalCount: number;
+};
+
+/**
+ * Describes the message services.notes.v1.ListNotesResponse.
+ * Use `create(ListNotesResponseSchema)` to create a new message.
+ */
+export const ListNotesResponseSchema: GenMessage<ListNotesResponse> = /*@__PURE__*/
+  messageDesc(file_services_notes_v1_notes, 10);
 
 /**
  * NotesService defines the notes service RPCs.
@@ -18,6 +277,48 @@ export const file_services_notes_v1_notes: GenFile = /*@__PURE__*/
  * @generated from service services.notes.v1.NotesService
  */
 export const NotesService: GenService<{
+  /**
+   * Note CRUD — quintet completed by forge (one-time); the wire contract is yours.
+   *
+   * @generated from rpc services.notes.v1.NotesService.CreateNote
+   */
+  createNote: {
+    methodKind: "unary";
+    input: typeof CreateNoteRequestSchema;
+    output: typeof CreateNoteResponseSchema;
+  },
+  /**
+   * @generated from rpc services.notes.v1.NotesService.GetNote
+   */
+  getNote: {
+    methodKind: "unary";
+    input: typeof GetNoteRequestSchema;
+    output: typeof GetNoteResponseSchema;
+  },
+  /**
+   * @generated from rpc services.notes.v1.NotesService.UpdateNote
+   */
+  updateNote: {
+    methodKind: "unary";
+    input: typeof UpdateNoteRequestSchema;
+    output: typeof UpdateNoteResponseSchema;
+  },
+  /**
+   * @generated from rpc services.notes.v1.NotesService.DeleteNote
+   */
+  deleteNote: {
+    methodKind: "unary";
+    input: typeof DeleteNoteRequestSchema;
+    output: typeof DeleteNoteResponseSchema;
+  },
+  /**
+   * @generated from rpc services.notes.v1.NotesService.ListNotes
+   */
+  listNotes: {
+    methodKind: "unary";
+    input: typeof ListNotesRequestSchema;
+    output: typeof ListNotesResponseSchema;
+  },
 }> = /*@__PURE__*/
   serviceDesc(file_services_notes_v1_notes, 0);
 

@@ -8,6 +8,84 @@
   },
   "defaults": [
     {
+      "id": "error-rate",
+      "alert": "ServiceErrorRateHigh",
+      "title": "Service error rate above 5%",
+      "severity": "critical",
+      "for": "5m",
+      "interval": "1m",
+      "signal": "metrics",
+      "params": [
+        {
+          "name": "threshold",
+          "default": 0.05,
+          "doc": "error ratio (0..1) that fires"
+        },
+        {
+          "name": "window_minutes",
+          "default": 5,
+          "doc": "minutes the ratio is computed over"
+        },
+        {
+          "name": "min_requests",
+          "default": 20,
+          "doc": "fewer requests than this in the window never fire (a ratio of 1 call is noise)"
+        }
+      ]
+    },
+    {
+      "id": "p95-latency",
+      "alert": "ServiceLatencyP95High",
+      "title": "Service p95 latency above 1s",
+      "severity": "warning",
+      "for": "10m",
+      "interval": "1m",
+      "signal": "metrics",
+      "params": [
+        {
+          "name": "threshold_seconds",
+          "default": 1,
+          "doc": "p95 latency in seconds that fires"
+        },
+        {
+          "name": "window_minutes",
+          "default": 5,
+          "doc": "minutes the percentile is computed over"
+        },
+        {
+          "name": "min_requests",
+          "default": 20,
+          "doc": "fewer requests than this in the window never fire"
+        }
+      ]
+    },
+    {
+      "id": "service-silent",
+      "alert": "ServiceSilent",
+      "title": "A service with steady traffic went quiet",
+      "severity": "warning",
+      "for": "0s",
+      "interval": "5m",
+      "signal": "metrics",
+      "params": [
+        {
+          "name": "silent_minutes",
+          "default": 10,
+          "doc": "minutes without a request before it fires"
+        },
+        {
+          "name": "min_active_hours",
+          "default": 18,
+          "doc": "of the previous 24h, the hours the service must have served requests in to count as steady (a quiet staging service never pages)"
+        },
+        {
+          "name": "max_prior_silences",
+          "default": 2,
+          "doc": "of the previous 24h, the most gaps of silent_minutes or longer a steady service may have had (a bursty service that is often this quiet never pages)"
+        }
+      ]
+    },
+    {
       "id": "frontend-js-errors",
       "alert": "FrontendJSErrorSpike",
       "title": "Frontend JS errors spiking against the 1h baseline",
@@ -94,6 +172,26 @@
       "id": "issue-spike",
       "alert": "IssueSpike",
       "title": "An issue's error rate is spiking against its previous day",
+      "severity": "warning",
+      "for": "0s",
+      "interval": "5m",
+      "signal": "platform",
+      "params": []
+    },
+    {
+      "id": "release-regressed",
+      "alert": "ReleaseRegressed",
+      "title": "A promoted release made the env worse once its health window closed",
+      "severity": "warning",
+      "for": "0s",
+      "interval": "1m",
+      "signal": "platform",
+      "params": []
+    },
+    {
+      "id": "service-anomaly",
+      "alert": "ServiceAnomaly",
+      "title": "A service's traffic, errors or latency left what is usual for this hour of the week",
       "severity": "warning",
       "for": "0s",
       "interval": "5m",
@@ -191,6 +289,111 @@
           "name": "window_minutes",
           "default": 5,
           "doc": "minutes of probes considered: the check fires when none of them succeeded"
+        }
+      ]
+    },
+    {
+      "id": "crash-loop",
+      "alert": "WorkloadCrashLooping",
+      "title": "A container keeps restarting",
+      "severity": "critical",
+      "for": "0s",
+      "interval": "1m",
+      "signal": "metadata",
+      "requires": "metadata",
+      "params": [
+        {
+          "name": "min_restarts",
+          "default": 3,
+          "doc": "restarts in the window that fire (the agent reports restarts every 5 minutes)"
+        },
+        {
+          "name": "window_minutes",
+          "default": 10,
+          "doc": "minutes the restart growth is measured over"
+        }
+      ]
+    },
+    {
+      "id": "oom-killed",
+      "alert": "WorkloadOOMKilled",
+      "title": "A container was killed for running out of memory",
+      "severity": "critical",
+      "for": "0s",
+      "interval": "1m",
+      "signal": "metadata",
+      "requires": "metadata",
+      "params": [
+        {
+          "name": "window_minutes",
+          "default": 10,
+          "doc": "minutes a fresh OOM kill stays visible (a container that restarted in the window and last died of OOMKilled)"
+        }
+      ]
+    },
+    {
+      "id": "memory-near-limit",
+      "alert": "WorkloadMemoryNearLimit",
+      "title": "A container is close to its memory limit",
+      "severity": "warning",
+      "for": "10m",
+      "interval": "1m",
+      "signal": "metadata",
+      "requires": "metadata",
+      "params": [
+        {
+          "name": "threshold",
+          "default": 0.9,
+          "doc": "memory / limit ratio (0..1) that fires"
+        },
+        {
+          "name": "window_minutes",
+          "default": 5,
+          "doc": "minutes the ratio is averaged over, so a spike does not fire"
+        }
+      ]
+    },
+    {
+      "id": "image-pull-failed",
+      "alert": "WorkloadImagePullFailed",
+      "title": "A workload cannot pull its image",
+      "severity": "warning",
+      "for": "5m",
+      "interval": "1m",
+      "signal": "metadata",
+      "requires": "metadata",
+      "params": [
+        {
+          "name": "min_events",
+          "default": 1,
+          "doc": "pull-failure events in the window that fire"
+        },
+        {
+          "name": "window_minutes",
+          "default": 15,
+          "doc": "minutes of events considered"
+        }
+      ]
+    },
+    {
+      "id": "evicted",
+      "alert": "WorkloadEvicted",
+      "title": "A pod was evicted",
+      "severity": "warning",
+      "for": "0s",
+      "interval": "1m",
+      "signal": "metadata",
+      "requires": "metadata",
+      "params": [
+        {
+          "name": "min_events",
+          "default": 1,
+          "doc": "eviction events in the window that fire"
+        },
+        {
+          "name": "window_minutes",
+          "default": 15,
+          "doc": "minutes of events considered"
         }
       ]
     },

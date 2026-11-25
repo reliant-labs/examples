@@ -1,0 +1,7 @@
+{
+  "version": "forge.dashboard-parts/v2",
+  "alert": {
+    "name": "notes",
+    "rpc_service": "services.notes.v1.NotesService"
+  }
+}

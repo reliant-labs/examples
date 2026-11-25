@@ -6,8 +6,10 @@ require (
 	connectrpc.com/connect/v2 v2.0.2
 	example.com/notes/gen v0.0.0
 	github.com/jackc/pgx/v5 v5.13.0
+	github.com/oklog/ulid/v2 v2.1.2
 	github.com/reliant-labs/forge v1.11.0
 	github.com/spf13/cobra v1.10.2
+	github.com/uptrace/bun v1.3.0
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/metric v1.47.0
 	google.golang.org/protobuf v1.36.12
@@ -60,7 +62,6 @@ require (
 	github.com/puzpuzpuz/xsync/v3 v3.5.1 // indirect
 	github.com/spf13/pflag v1.1.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
-	github.com/uptrace/bun v1.3.0 // indirect
 	github.com/uptrace/bun/dialect/pgdialect v1.3.0 // indirect
 	github.com/uptrace/bun/extra/bunotel v1.3.0 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.4.0 // indirect

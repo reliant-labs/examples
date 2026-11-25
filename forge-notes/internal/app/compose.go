@@ -30,6 +30,7 @@ func (g *Graph) newNotes() (*notes.Service, error) {
 	return notes.New(notes.Deps{
 		Logger: g.Log,
 		Config: g.Cfg,
+		DB:     g.ORM(),
 	})
 }
 

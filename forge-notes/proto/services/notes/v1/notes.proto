@@ -3,6 +3,8 @@ syntax = "proto3";
 package services.notes.v1;
 
 import "forge/v1/forge.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "example.com/notes/gen/services/notes/v1;notesv1";
 
@@ -15,10 +17,96 @@ service NotesService {
   };
 
   // TODO: Add your RPC methods here.
+
+  // Note CRUD — quintet completed by forge (one-time); the wire contract is yours.
+  rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse) {
+    option (forge.v1.method) = {
+      auth_required: true
+      idempotency_key: true
+    };
+  }
+  rpc GetNote(GetNoteRequest) returns (GetNoteResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+    option (forge.v1.method) = {auth_required: true};
+  }
+  rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse) {
+    option (forge.v1.method) = {
+      auth_required: true
+      idempotency_key: true
+    };
+  }
+  rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse) {
+    option (forge.v1.method) = {
+      auth_required: true
+      idempotency_key: true
+    };
+  }
+  rpc ListNotes(ListNotesRequest) returns (ListNotesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+    option (forge.v1.method) = {auth_required: true};
+  }
 }
 
 // forge:entity
 message Note {
   string title = 2;
   string body = 3;
+  // Managed by forge at birth: the identity and lifecycle fields the
+  // migration, the ORM row type, the CRUD envelopes and the frontend
+  // all project. Yours from here — forge never rewrites them.
+  string id = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message CreateNoteRequest {
+  string title = 1;
+  string body = 2;
+}
+
+message CreateNoteResponse {
+  Note note = 1;
+}
+
+message GetNoteRequest {
+  string id = 1;
+}
+
+message GetNoteResponse {
+  Note note = 1;
+}
+
+message UpdateNoteRequest {
+  Note note = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message UpdateNoteResponse {
+  Note note = 1;
+}
+
+message DeleteNoteRequest {
+  string id = 1;
+}
+
+message DeleteNoteResponse {}
+
+// List filters ARE this request's fields: the query filters on the same fields
+// declared here. Birth scaffolds a facet for every field it can filter
+// mechanically — free-text search, each bool, each enum, and each <stem>_id
+// reference. To filter by something else, add that field HERE and forge wires
+// it end to end — never fetch a page and filter client-side, which silently
+// truncates past the page cap. Delete a facet you do not want.
+message ListNotesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  optional string search = 3;
+  string order_by = 4;
+  bool descending = 5;
+}
+
+message ListNotesResponse {
+  repeated Note notes = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
 }

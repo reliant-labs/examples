@@ -12,6 +12,7 @@
         "APIListener",
         "DB",
         "Notes",
+        "ORM",
         "Pprof",
         "Sessions",
         "UserAuth",
@@ -38,17 +39,416 @@
     {
       "name": "services.notes.v1.NotesService",
       "proto_file": "services/notes/v1/notes.proto",
-      "methods": [],
+      "methods": [
+        {
+          "id": "services.notes.v1.NotesService/CreateNote",
+          "name": "CreateNote",
+          "input": "services.notes.v1.CreateNoteRequest",
+          "output": "services.notes.v1.CreateNoteResponse",
+          "client_streaming": false,
+          "server_streaming": false,
+          "idempotency": "UNKNOWN",
+          "auth_required": true
+        },
+        {
+          "id": "services.notes.v1.NotesService/DeleteNote",
+          "name": "DeleteNote",
+          "input": "services.notes.v1.DeleteNoteRequest",
+          "output": "services.notes.v1.DeleteNoteResponse",
+          "client_streaming": false,
+          "server_streaming": false,
+          "idempotency": "UNKNOWN",
+          "auth_required": true
+        },
+        {
+          "id": "services.notes.v1.NotesService/GetNote",
+          "name": "GetNote",
+          "input": "services.notes.v1.GetNoteRequest",
+          "output": "services.notes.v1.GetNoteResponse",
+          "client_streaming": false,
+          "server_streaming": false,
+          "idempotency": "NO_SIDE_EFFECTS",
+          "auth_required": true
+        },
+        {
+          "id": "services.notes.v1.NotesService/ListNotes",
+          "name": "ListNotes",
+          "input": "services.notes.v1.ListNotesRequest",
+          "output": "services.notes.v1.ListNotesResponse",
+          "client_streaming": false,
+          "server_streaming": false,
+          "idempotency": "NO_SIDE_EFFECTS",
+          "auth_required": true
+        },
+        {
+          "id": "services.notes.v1.NotesService/UpdateNote",
+          "name": "UpdateNote",
+          "input": "services.notes.v1.UpdateNoteRequest",
+          "output": "services.notes.v1.UpdateNoteResponse",
+          "client_streaming": false,
+          "server_streaming": false,
+          "idempotency": "UNKNOWN",
+          "auth_required": true
+        }
+      ],
       "descriptor": {
         "Name": "NotesService",
         "Package": "services.notes.v1",
         "GoPackage": "example.com/notes/gen/services/notes/v1",
         "PkgName": "notesv1",
-        "Methods": null,
+        "Methods": [
+          {
+            "Name": "CreateNote",
+            "InputType": "CreateNoteRequest",
+            "OutputType": "CreateNoteResponse",
+            "ClientStreaming": false,
+            "ServerStreaming": false,
+            "AuthRequired": true,
+            "Errors": null,
+            "Idempotency": "IDEMPOTENCY_UNKNOWN",
+            "InputTypeFQ": "services.notes.v1.CreateNoteRequest",
+            "OutputTypeFQ": "services.notes.v1.CreateNoteResponse",
+            "InputProtoFile": "services/notes/v1/notes.proto",
+            "OutputProtoFile": "services/notes/v1/notes.proto",
+            "Activity": {
+              "Mutating": true,
+              "Declared": true,
+              "Verb": "create",
+              "TargetKind": "note",
+              "Implied": true,
+              "Writer": "INTERCEPTOR"
+            }
+          },
+          {
+            "Name": "GetNote",
+            "InputType": "GetNoteRequest",
+            "OutputType": "GetNoteResponse",
+            "ClientStreaming": false,
+            "ServerStreaming": false,
+            "AuthRequired": true,
+            "Errors": null,
+            "NoSideEffects": true,
+            "Idempotency": "NO_SIDE_EFFECTS",
+            "InputTypeFQ": "services.notes.v1.GetNoteRequest",
+            "OutputTypeFQ": "services.notes.v1.GetNoteResponse",
+            "InputProtoFile": "services/notes/v1/notes.proto",
+            "OutputProtoFile": "services/notes/v1/notes.proto",
+            "Activity": {
+              "Mutating": false
+            }
+          },
+          {
+            "Name": "UpdateNote",
+            "InputType": "UpdateNoteRequest",
+            "OutputType": "UpdateNoteResponse",
+            "ClientStreaming": false,
+            "ServerStreaming": false,
+            "AuthRequired": true,
+            "Errors": null,
+            "Idempotency": "IDEMPOTENCY_UNKNOWN",
+            "InputTypeFQ": "services.notes.v1.UpdateNoteRequest",
+            "OutputTypeFQ": "services.notes.v1.UpdateNoteResponse",
+            "InputProtoFile": "services/notes/v1/notes.proto",
+            "OutputProtoFile": "services/notes/v1/notes.proto",
+            "Activity": {
+              "Mutating": true,
+              "Declared": true,
+              "Verb": "update",
+              "TargetKind": "note",
+              "Implied": true,
+              "Writer": "INTERCEPTOR"
+            }
+          },
+          {
+            "Name": "DeleteNote",
+            "InputType": "DeleteNoteRequest",
+            "OutputType": "DeleteNoteResponse",
+            "ClientStreaming": false,
+            "ServerStreaming": false,
+            "AuthRequired": true,
+            "Errors": null,
+            "Idempotency": "IDEMPOTENCY_UNKNOWN",
+            "InputTypeFQ": "services.notes.v1.DeleteNoteRequest",
+            "OutputTypeFQ": "services.notes.v1.DeleteNoteResponse",
+            "InputProtoFile": "services/notes/v1/notes.proto",
+            "OutputProtoFile": "services/notes/v1/notes.proto",
+            "Activity": {
+              "Mutating": true,
+              "Declared": true,
+              "Verb": "delete",
+              "TargetKind": "note",
+              "Implied": true,
+              "Writer": "INTERCEPTOR"
+            }
+          },
+          {
+            "Name": "ListNotes",
+            "InputType": "ListNotesRequest",
+            "OutputType": "ListNotesResponse",
+            "ClientStreaming": false,
+            "ServerStreaming": false,
+            "AuthRequired": true,
+            "Errors": null,
+            "NoSideEffects": true,
+            "Idempotency": "NO_SIDE_EFFECTS",
+            "InputTypeFQ": "services.notes.v1.ListNotesRequest",
+            "OutputTypeFQ": "services.notes.v1.ListNotesResponse",
+            "InputProtoFile": "services/notes/v1/notes.proto",
+            "OutputProtoFile": "services/notes/v1/notes.proto",
+            "Activity": {
+              "Mutating": false
+            }
+          }
+        ],
         "ProtoFile": "services/notes/v1/notes.proto",
         "ModulePath": "example.com/notes",
-        "Messages": {},
-        "Audience": "user"
+        "Messages": {
+          "CreateNoteRequest": [
+            {
+              "Name": "title",
+              "ProtoType": "string",
+              "IsOptional": false
+            },
+            {
+              "Name": "body",
+              "ProtoType": "string",
+              "IsOptional": false
+            }
+          ],
+          "CreateNoteResponse": [
+            {
+              "Name": "note",
+              "ProtoType": "message",
+              "IsOptional": false,
+              "MessageType": "services.notes.v1.Note"
+            }
+          ],
+          "DeleteNoteRequest": [
+            {
+              "Name": "id",
+              "ProtoType": "string",
+              "IsOptional": false
+            }
+          ],
+          "DeleteNoteResponse": null,
+          "GetNoteRequest": [
+            {
+              "Name": "id",
+              "ProtoType": "string",
+              "IsOptional": false
+            }
+          ],
+          "GetNoteResponse": [
+            {
+              "Name": "note",
+              "ProtoType": "message",
+              "IsOptional": false,
+              "MessageType": "services.notes.v1.Note"
+            }
+          ],
+          "ListNotesRequest": [
+            {
+              "Name": "page_size",
+              "ProtoType": "int32",
+              "IsOptional": false
+            },
+            {
+              "Name": "page_token",
+              "ProtoType": "string",
+              "IsOptional": false
+            },
+            {
+              "Name": "search",
+              "ProtoType": "string",
+              "IsOptional": true
+            },
+            {
+              "Name": "order_by",
+              "ProtoType": "string",
+              "IsOptional": false
+            },
+            {
+              "Name": "descending",
+              "ProtoType": "bool",
+              "IsOptional": false
+            }
+          ],
+          "ListNotesResponse": [
+            {
+              "Name": "notes",
+              "ProtoType": "[]message",
+              "IsOptional": false,
+              "MessageType": "services.notes.v1.Note"
+            },
+            {
+              "Name": "next_page_token",
+              "ProtoType": "string",
+              "IsOptional": false
+            },
+            {
+              "Name": "total_count",
+              "ProtoType": "int32",
+              "IsOptional": false
+            }
+          ],
+          "UpdateNoteRequest": [
+            {
+              "Name": "note",
+              "ProtoType": "message",
+              "IsOptional": false,
+              "MessageType": "services.notes.v1.Note"
+            },
+            {
+              "Name": "update_mask",
+              "ProtoType": "message",
+              "IsOptional": false,
+              "MessageType": "google.protobuf.FieldMask"
+            }
+          ],
+          "UpdateNoteResponse": [
+            {
+              "Name": "note",
+              "ProtoType": "message",
+              "IsOptional": false,
+              "MessageType": "services.notes.v1.Note"
+            }
+          ]
+        },
+        "Audience": "user",
+        "Schemas": {
+          "services.notes.v1.CreateNoteRequest": [
+            {
+              "name": "title",
+              "kind": "string"
+            },
+            {
+              "name": "body",
+              "kind": "string"
+            }
+          ],
+          "services.notes.v1.CreateNoteResponse": [
+            {
+              "name": "note",
+              "kind": "message",
+              "type_name": "services.notes.v1.Note"
+            }
+          ],
+          "services.notes.v1.DeleteNoteRequest": [
+            {
+              "name": "id",
+              "kind": "string"
+            }
+          ],
+          "services.notes.v1.DeleteNoteResponse": [],
+          "services.notes.v1.GetNoteRequest": [
+            {
+              "name": "id",
+              "kind": "string"
+            }
+          ],
+          "services.notes.v1.GetNoteResponse": [
+            {
+              "name": "note",
+              "kind": "message",
+              "type_name": "services.notes.v1.Note"
+            }
+          ],
+          "services.notes.v1.ListNotesRequest": [
+            {
+              "name": "page_size",
+              "kind": "int32"
+            },
+            {
+              "name": "page_token",
+              "kind": "string"
+            },
+            {
+              "name": "search",
+              "kind": "string",
+              "optional": true
+            },
+            {
+              "name": "order_by",
+              "kind": "string"
+            },
+            {
+              "name": "descending",
+              "kind": "bool"
+            }
+          ],
+          "services.notes.v1.ListNotesResponse": [
+            {
+              "name": "notes",
+              "kind": "message",
+              "type_name": "services.notes.v1.Note",
+              "repeated": true
+            },
+            {
+              "name": "next_page_token",
+              "kind": "string"
+            },
+            {
+              "name": "total_count",
+              "kind": "int32"
+            }
+          ],
+          "services.notes.v1.Note": [
+            {
+              "name": "title",
+              "kind": "string"
+            },
+            {
+              "name": "body",
+              "kind": "string"
+            },
+            {
+              "name": "id",
+              "kind": "string"
+            },
+            {
+              "name": "created_at",
+              "kind": "message",
+              "type_name": "google.protobuf.Timestamp"
+            },
+            {
+              "name": "updated_at",
+              "kind": "message",
+              "type_name": "google.protobuf.Timestamp"
+            }
+          ],
+          "services.notes.v1.UpdateNoteRequest": [
+            {
+              "name": "note",
+              "kind": "message",
+              "type_name": "services.notes.v1.Note"
+            },
+            {
+              "name": "update_mask",
+              "kind": "message",
+              "type_name": "google.protobuf.FieldMask"
+            }
+          ],
+          "services.notes.v1.UpdateNoteResponse": [
+            {
+              "name": "note",
+              "kind": "message",
+              "type_name": "services.notes.v1.Note"
+            }
+          ]
+        },
+        "SchemaFiles": {
+          "services.notes.v1.CreateNoteRequest": "services/notes/v1/notes.proto",
+          "services.notes.v1.CreateNoteResponse": "services/notes/v1/notes.proto",
+          "services.notes.v1.DeleteNoteRequest": "services/notes/v1/notes.proto",
+          "services.notes.v1.DeleteNoteResponse": "services/notes/v1/notes.proto",
+          "services.notes.v1.GetNoteRequest": "services/notes/v1/notes.proto",
+          "services.notes.v1.GetNoteResponse": "services/notes/v1/notes.proto",
+          "services.notes.v1.ListNotesRequest": "services/notes/v1/notes.proto",
+          "services.notes.v1.ListNotesResponse": "services/notes/v1/notes.proto",
+          "services.notes.v1.Note": "services/notes/v1/notes.proto",
+          "services.notes.v1.UpdateNoteRequest": "services/notes/v1/notes.proto",
+          "services.notes.v1.UpdateNoteResponse": "services/notes/v1/notes.proto"
+        }
       }
     }
   ],
@@ -183,6 +583,19 @@
       "candidates": [],
       "providers": [],
       "resolution": "unresolved"
+    },
+    {
+      "consumer": "Notes",
+      "field": "DB",
+      "interface": "github.com/reliant-labs/forge/pkg/orm.Context",
+      "methods": [],
+      "candidates": [
+        "ORM"
+      ],
+      "providers": [
+        "ORM"
+      ],
+      "resolution": "composition_expression"
     },
     {
       "consumer": "UserAuth",

@@ -10,6 +10,8 @@ import (
 	pb "example.com/notes/gen/services/notes/v1"
 	notesv1connect "example.com/notes/gen/services/notes/v1/notesv1connect"
 	"example.com/notes/pkg/config"
+
+	"github.com/reliant-labs/forge/pkg/orm"
 )
 
 // Deps holds dependencies for the notes service. Composition
@@ -17,6 +19,7 @@ import (
 // by type. The rpc methods on *Service are where this service's logic lives;
 // see the forge `api` / `services` skill.
 type Deps struct {
+	DB     orm.Context
 	Logger *slog.Logger
 	Config *config.Config
 	// Add your dependencies here (e.g. Repo Repository). Required ones get
@@ -32,6 +35,9 @@ func (d Deps) validateDeps() error {
 	}
 	if d.Config == nil {
 		return fmt.Errorf("notes: Deps.Config is required")
+	}
+	if d.DB == nil {
+		return fmt.Errorf("Deps.DB is required by the generated CRUD handlers — set DATABASE_URL (the generated bootstrap constructs the ORM client from it)")
 	}
 	// Add checks for your required Deps fields here. Example:
 	//   if d.Repo == nil { return fmt.Errorf("notes: Deps.Repo is required") }
