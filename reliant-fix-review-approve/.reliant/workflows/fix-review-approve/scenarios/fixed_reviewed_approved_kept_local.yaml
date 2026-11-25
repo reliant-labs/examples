@@ -1,0 +1,41 @@
+name: fixed_reviewed_approved_kept_local
+description: >-
+  Red tests, the agent fixes them on round 2, the guard and the reviewer pass,
+  a person approves, and with no publish_repo nothing is pushed
+events:
+  - node: tests
+    output: {exit_code: 1, stdout: "--- FAIL: TestPrice/order_exactly_at_the_threshold_ships_free\n"}
+  - node: workspace
+    output: {path: /home/me/.reliant/worktrees/demo/fix-run1, branch: worktree/fix-run1}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Changed the shipping comparison."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 1, stdout: "--- FAIL: TestPrice/discount_is_applied_before_the_shipping_threshold\n"}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Restored < FreeShippingThreshold."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 0, stdout: "ok  \texample.com/checkout/pricing\n"}
+  - node: guard
+    output: {exit_code: 0, stdout: ""}
+  - node: changes
+    output: {exit_code: 0, stdout: " M pricing/pricing.go\n\n-\tif discounted > 0 && discounted <= FreeShippingThreshold {\n+\tif discounted > 0 && discounted < FreeShippingThreshold {\n"}
+  - node: review
+    black_box: true
+    output:
+      completed: true
+      response: {verdict: approve, summary: "One-character fix to the threshold comparison; all tests pass."}
+  - node: approve
+    output: {approval_id: appr-1, status: approved}
+expect:
+  outcome: completed
+  completed: [tests, workspace, attempts, guard, changes, review, brief, approve, kept_local]
+  not_reached: [already_green, gave_up, tests_touched, review_blocked, publish, denied, undecided]
+  node_outputs:
+    attempts: {exit_code: 0, attempts: 2}
+  messages:
+    brief:
+      content_contains: ["passes after 2 attempt(s)", "Reviewer: approve", "nothing is pushed"]
+    kept_local:
+      content_contains: ["Nothing was pushed", "worktree/fix-run1"]

@@ -1,0 +1,20 @@
+name: stops_at_max_attempts
+description: The tests never pass; the loop stops at max_attempts with the last output
+inputs:
+  workspace_path: /w/fix-run
+  max_attempts: 2
+events:
+  - node: fix_loop.fix
+    black_box: true
+    output: {response_text: "Try 1."}
+  - node: fix_loop.verify
+    output: {exit_code: 1, stdout: "FAIL one\n"}
+  - node: fix_loop.fix
+    black_box: true
+    output: {response_text: "Try 2."}
+  - node: fix_loop.verify
+    output: {exit_code: 1, stdout: "FAIL two\n"}
+expect:
+  outcome: completed
+  completed: [fix_loop]
+  outputs: {exit_code: 1, attempts: 2, test_output: "FAIL two\n"}

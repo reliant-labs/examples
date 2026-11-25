@@ -1,0 +1,36 @@
+name: approved_fix_is_published
+description: With publish_repo set, an approved fix is pushed by git_publish to a reliant-demo/ branch
+inputs:
+  publish_repo: you/reliant-workflow-demo
+events:
+  - node: tests
+    output: {exit_code: 1, stdout: "--- FAIL\n"}
+  - node: workspace
+    output: {path: /home/me/.reliant/worktrees/demo/fix-run2, branch: worktree/fix-run2}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Fixed."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 0, stdout: "ok\n"}
+  - node: guard
+    output: {exit_code: 0, stdout: ""}
+  - node: changes
+    output: {exit_code: 0, stdout: " M pricing/pricing.go\n"}
+  - node: review
+    black_box: true
+    output:
+      completed: true
+      response: {verdict: approve, summary: "Minimal and correct."}
+  - node: approve
+    output: {approval_id: appr-2, status: approved}
+  - node: publish
+    output: {pushed: true, sha: 0a1b2c3, branch: reliant-demo/fix-run2, files_changed: 1, insertions: 1, deletions: 1, refused: false}
+expect:
+  outcome: completed
+  completed: [approve, publish, published]
+  not_reached: [kept_local, not_pushed, denied, undecided]
+  messages:
+    brief:
+      content_contains: ["push to you/reliant-workflow-demo"]
+    published:
+      content_contains: ["pushed 0a1b2c3", "reliant-demo/fix-run2"]
