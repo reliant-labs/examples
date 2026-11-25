@@ -654,13 +654,13 @@ const file_services_notes_v1_notes_proto_rawDesc = "" +
 	"totalCount2\xa7\x04\n" +
 	"\fNotesService\x12c\n" +
 	"\n" +
-	"CreateNote\x12$.services.notes.v1.CreateNoteRequest\x1a%.services.notes.v1.CreateNoteResponse\"\b\xa2\xbb\x18\x04\b\x01(\x01\x12[\n" +
-	"\aGetNote\x12!.services.notes.v1.GetNoteRequest\x1a\".services.notes.v1.GetNoteResponse\"\t\xa2\xbb\x18\x02\b\x01\x90\x02\x01\x12c\n" +
+	"CreateNote\x12$.services.notes.v1.CreateNoteRequest\x1a%.services.notes.v1.CreateNoteResponse\"\b\xa2\xbb\x18\x04\b\x00(\x01\x12[\n" +
+	"\aGetNote\x12!.services.notes.v1.GetNoteRequest\x1a\".services.notes.v1.GetNoteResponse\"\t\xa2\xbb\x18\x02\b\x00\x90\x02\x01\x12c\n" +
 	"\n" +
-	"UpdateNote\x12$.services.notes.v1.UpdateNoteRequest\x1a%.services.notes.v1.UpdateNoteResponse\"\b\xa2\xbb\x18\x04\b\x01(\x01\x12c\n" +
+	"UpdateNote\x12$.services.notes.v1.UpdateNoteRequest\x1a%.services.notes.v1.UpdateNoteResponse\"\b\xa2\xbb\x18\x04\b\x00(\x01\x12c\n" +
 	"\n" +
-	"DeleteNote\x12$.services.notes.v1.DeleteNoteRequest\x1a%.services.notes.v1.DeleteNoteResponse\"\b\xa2\xbb\x18\x04\b\x01(\x01\x12a\n" +
-	"\tListNotes\x12#.services.notes.v1.ListNotesRequest\x1a$.services.notes.v1.ListNotesResponse\"\t\xa2\xbb\x18\x02\b\x01\x90\x02\x01\x1a(\x82\xb5\x18$\n" +
+	"DeleteNote\x12$.services.notes.v1.DeleteNoteRequest\x1a%.services.notes.v1.DeleteNoteResponse\"\b\xa2\xbb\x18\x04\b\x00(\x01\x12a\n" +
+	"\tListNotes\x12#.services.notes.v1.ListNotesRequest\x1a$.services.notes.v1.ListNotesResponse\"\t\xa2\xbb\x18\x02\b\x00\x90\x02\x01\x1a(\x82\xb5\x18$\n" +
 	"\fNotesService\x12\x051.0.0\x1a\rnotes serviceB1Z/example.com/notes/gen/services/notes/v1;notesv1b\x06proto3"
 
 var (

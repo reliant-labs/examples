@@ -48,7 +48,7 @@
           "client_streaming": false,
           "server_streaming": false,
           "idempotency": "UNKNOWN",
-          "auth_required": true
+          "auth_required": false
         },
         {
           "id": "services.notes.v1.NotesService/DeleteNote",
@@ -58,7 +58,7 @@
           "client_streaming": false,
           "server_streaming": false,
           "idempotency": "UNKNOWN",
-          "auth_required": true
+          "auth_required": false
         },
         {
           "id": "services.notes.v1.NotesService/GetNote",
@@ -68,7 +68,7 @@
           "client_streaming": false,
           "server_streaming": false,
           "idempotency": "NO_SIDE_EFFECTS",
-          "auth_required": true
+          "auth_required": false
         },
         {
           "id": "services.notes.v1.NotesService/ListNotes",
@@ -78,7 +78,7 @@
           "client_streaming": false,
           "server_streaming": false,
           "idempotency": "NO_SIDE_EFFECTS",
-          "auth_required": true
+          "auth_required": false
         },
         {
           "id": "services.notes.v1.NotesService/UpdateNote",
@@ -88,7 +88,7 @@
           "client_streaming": false,
           "server_streaming": false,
           "idempotency": "UNKNOWN",
-          "auth_required": true
+          "auth_required": false
         }
       ],
       "descriptor": {
@@ -103,7 +103,7 @@
             "OutputType": "CreateNoteResponse",
             "ClientStreaming": false,
             "ServerStreaming": false,
-            "AuthRequired": true,
+            "AuthRequired": false,
             "Errors": null,
             "Idempotency": "IDEMPOTENCY_UNKNOWN",
             "InputTypeFQ": "services.notes.v1.CreateNoteRequest",
@@ -125,7 +125,7 @@
             "OutputType": "GetNoteResponse",
             "ClientStreaming": false,
             "ServerStreaming": false,
-            "AuthRequired": true,
+            "AuthRequired": false,
             "Errors": null,
             "NoSideEffects": true,
             "Idempotency": "NO_SIDE_EFFECTS",
@@ -143,7 +143,7 @@
             "OutputType": "UpdateNoteResponse",
             "ClientStreaming": false,
             "ServerStreaming": false,
-            "AuthRequired": true,
+            "AuthRequired": false,
             "Errors": null,
             "Idempotency": "IDEMPOTENCY_UNKNOWN",
             "InputTypeFQ": "services.notes.v1.UpdateNoteRequest",
@@ -165,7 +165,7 @@
             "OutputType": "DeleteNoteResponse",
             "ClientStreaming": false,
             "ServerStreaming": false,
-            "AuthRequired": true,
+            "AuthRequired": false,
             "Errors": null,
             "Idempotency": "IDEMPOTENCY_UNKNOWN",
             "InputTypeFQ": "services.notes.v1.DeleteNoteRequest",
@@ -187,7 +187,7 @@
             "OutputType": "ListNotesResponse",
             "ClientStreaming": false,
             "ServerStreaming": false,
-            "AuthRequired": true,
+            "AuthRequired": false,
             "Errors": null,
             "NoSideEffects": true,
             "Idempotency": "NO_SIDE_EFFECTS",

@@ -21,29 +21,29 @@ service NotesService {
   // Note CRUD — quintet completed by forge (one-time); the wire contract is yours.
   rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse) {
     option (forge.v1.method) = {
-      auth_required: true
+      auth_required: false
       idempotency_key: true
     };
   }
   rpc GetNote(GetNoteRequest) returns (GetNoteResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
-    option (forge.v1.method) = {auth_required: true};
+    option (forge.v1.method) = {auth_required: false};
   }
   rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse) {
     option (forge.v1.method) = {
-      auth_required: true
+      auth_required: false
       idempotency_key: true
     };
   }
   rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse) {
     option (forge.v1.method) = {
-      auth_required: true
+      auth_required: false
       idempotency_key: true
     };
   }
   rpc ListNotes(ListNotesRequest) returns (ListNotesResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
-    option (forge.v1.method) = {auth_required: true};
+    option (forge.v1.method) = {auth_required: false};
   }
 }
 
