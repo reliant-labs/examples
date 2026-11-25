@@ -16,3 +16,9 @@ service NotesService {
 
   // TODO: Add your RPC methods here.
 }
+
+// forge:entity
+message Note {
+  string title = 2;
+  string body = 3;
+}
