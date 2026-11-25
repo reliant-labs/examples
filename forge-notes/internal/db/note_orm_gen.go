@@ -42,6 +42,8 @@ const (
 	NoteFieldCreatedAt = "created_at"
 	NoteFieldUpdatedAt = "updated_at"
 	NoteFieldPinned    = "pinned"
+	// Hand edit: an extra constant someone added straight into generated code.
+	NoteFieldIsPinned = "pinned"
 )
 
 // NoteColumns is the ordered list of declared columns for Note.
