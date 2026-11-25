@@ -1,0 +1,16 @@
+$ psql "$DEV_DSN" -c "SELECT count(*) FROM notes"
+ count 
+-------
+    21
+(1 row)
+
+$ psql "$DEV_DSN" <<SQL
+BEGIN;
+ALTER TABLE notes DROP COLUMN pinned;                  -- the schema before the migration
+ALTER TABLE notes ADD COLUMN pinned BOOLEAN NOT NULL;  -- the statement lint rejected
+ROLLBACK;
+SQL
+BEGIN
+ALTER TABLE
+ERROR:  column "pinned" of relation "notes" contains null values
+ROLLBACK

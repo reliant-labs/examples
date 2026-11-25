@@ -1,0 +1,7 @@
+$ forge lint --migration-safety --generated-drift
+▸ --migration-safety
+▸ --generated-drift
+✓ migration-safety
+✓ generated-drift
+✅ All 2 gating linters passed.
+exit=0

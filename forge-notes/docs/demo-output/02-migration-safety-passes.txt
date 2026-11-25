@@ -1,0 +1,5 @@
+$ forge lint --migration-safety
+▸ --migration-safety
+✓ migration-safety
+✅ All 1 gating linters passed.
+exit=0

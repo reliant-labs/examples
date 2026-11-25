@@ -1,0 +1,490 @@
+notes/
+├── .github/
+│   ├── actions/
+│   │   └── forge-deploy/
+│   │       └── action.yml    [user-owned]
+│   ├── workflows/
+│   │   ├── build-images.yml    [user-owned]
+│   │   ├── ci.yml    [user-owned]
+│   │   ├── e2e.yml    [user-owned]
+│   │   ├── pgo-refresh.yml    [user-owned]
+│   │   ├── pre-commit.yml    [user-owned]
+│   │   ├── proto-breaking.yml    [user-owned]
+│   │   └── release.yml    [user-owned]
+│   ├── dependabot.yml    [user-owned]
+│   └── pull_request_template.md    [user-owned]
+├── benchmarks/
+│   ├── k6/
+│   │   └── smoke.js    [user-owned]
+│   ├── README.md    [user-owned]
+│   └── healthz_bench_test.go    [user-owned]
+├── bin/
+│   ├── observability/
+│   │   └── metrics-schema.json    [user-owned]
+│   └── notes    [forge-space, hand-edited (drift from regen), ⚠ drift]
+├── cmd/
+│   └── notes/
+│       ├── cmd/
+│       │   ├── commands.go    [user-owned]
+│       │   ├── db.go    [user-owned]
+│       │   ├── metrics.go    [user-owned]
+│       │   ├── root.go    [user-owned]
+│       │   ├── roots_gen.go    [forge-space, regenerated]
+│       │   ├── serve.go    [user-owned]
+│       │   └── version.go    [user-owned]
+│       └── main.go    [user-owned]
+├── db/
+│   ├── grants/
+│   │   ├── readonly/
+│   │   │   ├── public.auth_handoffs_gen.sql    [forge-space, regenerated]
+│   │   │   ├── public.auth_sessions_gen.sql    [forge-space, regenerated]
+│   │   │   └── public.notes_gen.sql    [forge-space, regenerated]
+│   │   └── readonly_gen.sql    [forge-space, regenerated]
+│   ├── migrations/
+│   │   ├── 20261125231452_create_auth_sessions.up.sql    [user-owned]
+│   │   ├── 20261125231524_create_notes.up.sql    [user-owned]
+│   │   └── 20261125231752_add_note_pinned.up.sql    [user-owned]
+│   ├── seeds/
+│   │   ├── custom/
+│   │   │   ├── README.md    [user-owned]
+│   │   │   └── example.sql    [user-owned]
+│   │   ├── README.md    [user-owned]
+│   │   └── vocab.yaml    [user-owned]
+│   ├── README.md    [user-owned]
+│   ├── embed_gen.go    [forge-space, regenerated]
+│   └── source_gen.go    [forge-space, regenerated]
+├── deploy/
+│   ├── kcl/
+│   │   ├── base/
+│   │   │   └── env.k    [user-owned]
+│   │   ├── dev/
+│   │   │   ├── config.k    [user-owned]
+│   │   │   ├── ingress.k    [user-owned]
+│   │   │   └── main.k    [user-owned]
+│   │   ├── prod/
+│   │   │   ├── config.k    [user-owned]
+│   │   │   ├── ingress.k    [user-owned]
+│   │   │   └── main.k    [user-owned]
+│   │   ├── staging/
+│   │   │   ├── config.k    [user-owned]
+│   │   │   ├── ingress.k    [user-owned]
+│   │   │   └── main.k    [user-owned]
+│   │   ├── config_gen.k    [forge-space, regenerated]
+│   │   ├── frontend_config_gen.k    [forge-space, regenerated]
+│   │   ├── ingress.k    [user-owned]
+│   │   ├── kcl.mod    [user-owned]
+│   │   ├── kcl.mod.lock    [user-owned]
+│   │   └── workloads.k    [user-owned]
+│   ├── observability/
+│   │   ├── dashboards/
+│   │   │   ├── README.md    [user-owned]
+│   │   │   ├── notes-frontend_gen.json    [forge-space, regenerated]
+│   │   │   ├── notes-notes-postgres_gen.json    [forge-space, regenerated]
+│   │   │   ├── notes-overview.json    [user-owned]
+│   │   │   └── notes-telemetry-notes-postgres_gen.json    [forge-space, regenerated]
+│   │   ├── spec/
+│   │   │   ├── alert-service-notes_gen.json    [forge-space, regenerated]
+│   │   │   ├── project_gen.json    [forge-space, regenerated]
+│   │   │   └── telemetry-notes-postgres_gen.json    [forge-space, regenerated]
+│   │   ├── alert-defaults_gen.json    [forge-space, regenerated]
+│   │   ├── otel-collector.yaml    [user-owned]
+│   │   ├── otel-profiles.yaml    [user-owned]
+│   │   └── profiles-schema.sql    [user-owned]
+│   ├── k3d-ports.yaml    [forge-space, regenerated]
+│   └── k3d.yaml    [user-owned]
+├── docs/
+│   ├── demo-output/
+│   │   ├── 01-migration-safety-rejects.txt    [user-owned]
+│   │   ├── 02-migration-safety-passes.txt    [user-owned]
+│   │   ├── 03-postgres-refuses-unsafe-migration.txt    [user-owned]
+│   │   ├── 04-generated-drift-rejects.txt    [user-owned]
+│   │   ├── 05-generate-refuses-hand-edit.txt    [user-owned]
+│   │   ├── 06-main-lints-clean.txt    [user-owned]
+│   │   ├── 07-local-api.txt    [user-owned]
+│   │   └── project-map.txt    [user-owned]
+│   ├── screenshots/
+│   │   └── notes-local-dev.png    [user-owned]
+│   ├── forge-project-readme.md    [user-owned]
+│   └── runbook.md    [user-owned]
+├── e2e/
+│   └── notes/
+│       ├── docker-compose.e2e.yml    [user-owned]
+│       ├── helpers_test.go    [user-owned]
+│       ├── main_test.go    [user-owned]
+│       └── service_test.go    [user-owned]
+├── examples/
+│   └── README.md    [user-owned]
+├── frontends/
+│   └── web/
+│       ├── out/
+│       │   ├── _next/
+│       │   │   ├── PQlZSVetGyfBVHMm4uyY7/
+│       │   │   └── static/
+│       │   │       ├── PQlZSVetGyfBVHMm4uyY7/
+│       │   │       │   ├── _buildManifest.js    [user-owned]
+│       │   │       │   └── _ssgManifest.js    [user-owned]
+│       │   │       ├── chunks/
+│       │   │       │   ├── app/
+│       │   │       │   │   ├── %5F_forge/
+│       │   │       │   │   │   └── log/
+│       │   │       │   │   │       └── route-8ad1a302e360d47d.js    [user-owned]
+│       │   │       │   │   ├── _global-error/
+│       │   │       │   │   │   └── page-8ad1a302e360d47d.js    [user-owned]
+│       │   │       │   │   ├── _not-found/
+│       │   │       │   │   │   └── page-8ad1a302e360d47d.js    [user-owned]
+│       │   │       │   │   ├── notes/
+│       │   │       │   │   │   ├── edit/
+│       │   │       │   │   │   │   └── page-d8df3b9cc0bae18e.js    [user-owned]
+│       │   │       │   │   │   ├── new/
+│       │   │       │   │   │   │   └── page-8c85769a3d95ca67.js    [user-owned]
+│       │   │       │   │   │   ├── view/
+│       │   │       │   │   │   │   └── page-18bb87ce0813c494.js    [user-owned]
+│       │   │       │   │   │   └── page-b991c6dae9f5ca98.js    [user-owned]
+│       │   │       │   │   ├── error-058c96bc9c8b5177.js    [user-owned]
+│       │   │       │   │   ├── global-error-603c378b88375402.js    [user-owned]
+│       │   │       │   │   ├── layout-b705e988b267bca2.js    [user-owned]
+│       │   │       │   │   ├── loading-8ad1a302e360d47d.js    [user-owned]
+│       │   │       │   │   ├── not-found-9f21f298ad4296bd.js    [user-owned]
+│       │   │       │   │   └── page-b495a4013a274616.js    [user-owned]
+│       │   │       │   ├── next/
+│       │   │       │   ├── 195.0295ba2e53fa8a94.js    [user-owned]
+│       │   │       │   ├── 2201c508-ef92bfa6b2db30b4.js    [user-owned]
+│       │   │       │   ├── 262.025b5b5d69f05658.js    [user-owned]
+│       │   │       │   ├── 293-c47934417bbd8331.js    [user-owned]
+│       │   │       │   ├── 309-d505f7b4f9a597c6.js    [user-owned]
+│       │   │       │   ├── 362-3f4f82694c41072c.js    [user-owned]
+│       │   │       │   ├── 408-e46556a2d817c71f.js    [user-owned]
+│       │   │       │   ├── 41.c67dcc4d53e70fbe.js    [user-owned]
+│       │   │       │   ├── 468-a920f9e61236d206.js    [user-owned]
+│       │   │       │   ├── 475-44c6fba7e6c85a21.js    [user-owned]
+│       │   │       │   ├── 521-ae5b5ba9c013f0e0.js    [user-owned]
+│       │   │       │   ├── 61d02e1b.fb46c4c3259ecfb9.js    [user-owned]
+│       │   │       │   ├── 658.e2a8859b3eaad656.js    [user-owned]
+│       │   │       │   ├── 701-65321ca11134b7d4.js    [user-owned]
+│       │   │       │   ├── 727-b42036977fa6a8ca.js    [user-owned]
+│       │   │       │   ├── 979-9bd8f38994f95f87.js    [user-owned]
+│       │   │       │   ├── framework-bd56b08c1c08b97c.js    [user-owned]
+│       │   │       │   ├── main-39e69d1548c8de36.js    [user-owned]
+│       │   │       │   ├── main-app-7c3d5a5836e5c22f.js    [user-owned]
+│       │   │       │   ├── polyfills-42372ed130431b0a.js    [user-owned]
+│       │   │       │   └── webpack-678aadfd0da7eb56.js    [user-owned]
+│       │   │       ├── css/
+│       │   │       │   └── 4c8b7963b08fc6a1.css    [user-owned]
+│       │   │       └── media/
+│       │   │           ├── 2bcd4b1f8f3a3e9f.p.woff2    [user-owned]
+│       │   │           └── cf72403939ff961f-s.p.woff2    [user-owned]
+│       │   ├── _not-found/
+│       │   │   ├── __next._full.txt    [user-owned]
+│       │   │   ├── __next._not-found.__PAGE__.txt    [user-owned]
+│       │   │   └── __next._tree.txt    [user-owned]
+│       │   ├── notes/
+│       │   │   ├── edit/
+│       │   │   │   ├── __next._full.txt    [user-owned]
+│       │   │   │   ├── __next._tree.txt    [user-owned]
+│       │   │   │   └── __next.notes.edit.__PAGE__.txt    [user-owned]
+│       │   │   ├── new/
+│       │   │   │   ├── __next._full.txt    [user-owned]
+│       │   │   │   ├── __next._tree.txt    [user-owned]
+│       │   │   │   └── __next.notes.new.__PAGE__.txt    [user-owned]
+│       │   │   ├── view/
+│       │   │   │   ├── __next._full.txt    [user-owned]
+│       │   │   │   ├── __next._tree.txt    [user-owned]
+│       │   │   │   └── __next.notes.view.__PAGE__.txt    [user-owned]
+│       │   │   ├── __next._full.txt    [user-owned]
+│       │   │   ├── __next._tree.txt    [user-owned]
+│       │   │   ├── __next.notes.__PAGE__.txt    [user-owned]
+│       │   │   ├── edit.html    [user-owned]
+│       │   │   ├── edit.txt    [user-owned]
+│       │   │   ├── new.html    [user-owned]
+│       │   │   ├── new.txt    [user-owned]
+│       │   │   ├── view.html    [user-owned]
+│       │   │   └── view.txt    [user-owned]
+│       │   ├── 404.html    [user-owned]
+│       │   ├── README.md    [user-owned]
+│       │   ├── __next.__PAGE__.txt    [user-owned]
+│       │   ├── __next._full.txt    [user-owned]
+│       │   ├── __next._tree.txt    [user-owned]
+│       │   ├── _headers    [user-owned]
+│       │   ├── _not-found.html    [user-owned]
+│       │   ├── _not-found.txt    [user-owned]
+│       │   ├── icon.svg    [user-owned]
+│       │   ├── index.html    [user-owned]
+│       │   ├── index.txt    [user-owned]
+│       │   ├── notes.html    [user-owned]
+│       │   └── notes.txt    [user-owned]
+│       ├── public/
+│       │   ├── README.md    [user-owned]
+│       │   ├── _headers    [user-owned]
+│       │   └── config.js    [forge-space, regenerated]
+│       ├── src/
+│       │   ├── app/
+│       │   │   ├── %5F_forge/
+│       │   │   │   └── log/
+│       │   │   │       └── route.ts    [user-owned]
+│       │   │   ├── notes/
+│       │   │   │   ├── edit/
+│       │   │   │   │   └── page.tsx    [user-owned]
+│       │   │   │   ├── new/
+│       │   │   │   │   └── page.tsx    [user-owned]
+│       │   │   │   ├── view/
+│       │   │   │   │   └── page.tsx    [user-owned]
+│       │   │   │   └── page.tsx    [user-owned]
+│       │   │   ├── dashboard.tsx    [user-owned]
+│       │   │   ├── error.tsx    [user-owned]
+│       │   │   ├── global-error.tsx    [user-owned]
+│       │   │   ├── globals.css    [user-owned]
+│       │   │   ├── icon.svg    [user-owned]
+│       │   │   ├── layout.tsx    [user-owned]
+│       │   │   ├── loading.tsx    [user-owned]
+│       │   │   ├── not-found.tsx    [user-owned]
+│       │   │   ├── page.test.tsx    [user-owned]
+│       │   │   ├── page.tsx    [user-owned]
+│       │   │   └── providers.tsx    [user-owned]
+│       │   ├── components/
+│       │   │   ├── dashboard-tiles/
+│       │   │   │   └── notes_gen.tsx    [forge-space, regenerated]
+│       │   │   ├── ui/
+│       │   │   │   ├── alert_banner.tsx    [user-owned]
+│       │   │   │   ├── avatar.tsx    [user-owned]
+│       │   │   │   ├── badge.tsx    [user-owned]
+│       │   │   │   ├── button.tsx    [user-owned]
+│       │   │   │   ├── button_classes.tsx    [user-owned]
+│       │   │   │   ├── card.tsx    [user-owned]
+│       │   │   │   ├── chip.tsx    [user-owned]
+│       │   │   │   ├── confirmation_dialog.tsx    [user-owned]
+│       │   │   │   ├── data_table.tsx    [user-owned]
+│       │   │   │   ├── dropdown_menu.tsx    [user-owned]
+│       │   │   │   ├── empty_state.tsx    [user-owned]
+│       │   │   │   ├── filter_bar.tsx    [user-owned]
+│       │   │   │   ├── form.tsx    [user-owned]
+│       │   │   │   ├── form_field_context.tsx    [user-owned]
+│       │   │   │   ├── input.tsx    [user-owned]
+│       │   │   │   ├── key_value_list.tsx    [user-owned]
+│       │   │   │   ├── label.tsx    [user-owned]
+│       │   │   │   ├── link.tsx    [user-owned]
+│       │   │   │   ├── login_form.tsx    [user-owned]
+│       │   │   │   ├── metric_card.tsx    [user-owned]
+│       │   │   │   ├── modal.tsx    [user-owned]
+│       │   │   │   ├── modal_dialog.tsx    [user-owned]
+│       │   │   │   ├── mono.tsx    [user-owned]
+│       │   │   │   ├── page_header.tsx    [user-owned]
+│       │   │   │   ├── pagination.tsx    [user-owned]
+│       │   │   │   ├── popover.tsx    [user-owned]
+│       │   │   │   ├── progress_bar.tsx    [user-owned]
+│       │   │   │   ├── row_actions_menu.tsx    [user-owned]
+│       │   │   │   ├── search_input.tsx    [user-owned]
+│       │   │   │   ├── select.tsx    [user-owned]
+│       │   │   │   ├── sidebar_layout.tsx    [user-owned]
+│       │   │   │   ├── skeleton_loader.tsx    [user-owned]
+│       │   │   │   ├── stat_grid.tsx    [user-owned]
+│       │   │   │   ├── status.tsx    [user-owned]
+│       │   │   │   ├── table.tsx    [user-owned]
+│       │   │   │   ├── tabs.tsx    [user-owned]
+│       │   │   │   ├── tag.tsx    [user-owned]
+│       │   │   │   ├── textarea.tsx    [user-owned]
+│       │   │   │   ├── toast_notification.tsx    [user-owned]
+│       │   │   │   └── tooltip.tsx    [user-owned]
+│       │   │   ├── app_header.tsx    [user-owned]
+│       │   │   ├── app_shell.tsx    [user-owned]
+│       │   │   ├── dashboard-tiles_gen.ts    [forge-space, regenerated]
+│       │   │   ├── entity-name.tsx    [user-owned]
+│       │   │   ├── entity-picker.test.tsx    [user-owned]
+│       │   │   ├── entity-picker.tsx    [user-owned]
+│       │   │   ├── enum-select.tsx    [user-owned]
+│       │   │   ├── mobile_nav.tsx    [user-owned]
+│       │   │   ├── mock_mode_banner.tsx    [user-owned]
+│       │   │   ├── nav.tsx    [user-owned]
+│       │   │   ├── session_nav.test.tsx    [user-owned]
+│       │   │   ├── session_nav.tsx    [user-owned]
+│       │   │   ├── status-badge.test.tsx    [user-owned]
+│       │   │   ├── status-badge.tsx    [user-owned]
+│       │   │   └── theme-toggle.tsx    [user-owned]
+│       │   ├── gen/
+│       │   │   ├── forge/
+│       │   │   │   └── v1/
+│       │   │   │       └── forge_pb.ts    [user-owned]
+│       │   │   ├── notes/
+│       │   │   │   └── config/
+│       │   │   │       └── v1/
+│       │   │   │           ├── config_pb.ts    [user-owned]
+│       │   │   │           └── web_config_pb.ts    [user-owned]
+│       │   │   └── services/
+│       │   │       └── notes/
+│       │   │           └── v1/
+│       │   │               └── notes_pb.ts    [user-owned]
+│       │   ├── hooks/
+│       │   │   ├── index.ts    [forge-space, regenerated]
+│       │   │   ├── notes-service-hooks.test.tsx    [user-owned]
+│       │   │   ├── notes-service-hooks_gen.ts    [forge-space, regenerated]
+│       │   │   ├── use-api-mutation.ts    [user-owned]
+│       │   │   ├── use-api-query.ts    [user-owned]
+│       │   │   ├── use-join.ts    [user-owned]
+│       │   │   ├── use-optimistic-mutation.ts    [user-owned]
+│       │   │   └── use-query-resource.ts    [user-owned]
+│       │   ├── lib/
+│       │   │   ├── auth/
+│       │   │   │   ├── context.test.tsx    [user-owned]
+│       │   │   │   ├── context.tsx    [user-owned]
+│       │   │   │   ├── native-login.ts    [user-owned]
+│       │   │   │   ├── provider.ts    [user-owned]
+│       │   │   │   ├── return-to.test.ts    [user-owned]
+│       │   │   │   ├── return-to.ts    [user-owned]
+│       │   │   │   ├── route-access_gen.ts    [forge-space, regenerated]
+│       │   │   │   ├── route-guard.test.tsx    [user-owned]
+│       │   │   │   ├── route-guard.tsx    [user-owned]
+│       │   │   │   ├── session-provider.ts    [user-owned]
+│       │   │   │   └── use-auth.ts    [user-owned]
+│       │   │   ├── nav-routes/
+│       │   │   │   └── notes_gen.ts    [forge-space, regenerated]
+│       │   │   ├── theme/
+│       │   │   │   ├── brand-theme.ts    [user-owned]
+│       │   │   │   ├── theme-provider.tsx    [user-owned]
+│       │   │   │   └── use-theme.ts    [user-owned]
+│       │   │   ├── admin-url.ts    [user-owned]
+│       │   │   ├── api-base.test.ts    [user-owned]
+│       │   │   ├── api-base.ts    [user-owned]
+│       │   │   ├── apiurl_gen.ts    [forge-space, regenerated]
+│       │   │   ├── basepath_gen.ts    [forge-space, regenerated]
+│       │   │   ├── config_gen.ts    [forge-space, regenerated]
+│       │   │   ├── config_schema_gen.json    [forge-space, regenerated]
+│       │   │   ├── connect.ts    [user-owned]
+│       │   │   ├── entity-routes.test.ts    [user-owned]
+│       │   │   ├── entity-routes.ts    [user-owned]
+│       │   │   ├── event-context.tsx    [user-owned]
+│       │   │   ├── events.ts    [user-owned]
+│       │   │   ├── fixtures.test.ts    [user-owned]
+│       │   │   ├── fixtures.ts    [user-owned]
+│       │   │   ├── format-utils.test.ts    [user-owned]
+│       │   │   ├── format-utils.ts    [user-owned]
+│       │   │   ├── mock-transport_gen.ts    [forge-space, regenerated]
+│       │   │   ├── nav-routes_gen.ts    [forge-space, regenerated]
+│       │   │   ├── otel_gen.ts    [forge-space, regenerated]
+│       │   │   ├── query-client.test.ts    [user-owned]
+│       │   │   ├── query-client.ts    [user-owned]
+│       │   │   ├── search-schemas.ts    [user-owned]
+│       │   │   ├── test-utils.tsx    [user-owned]
+│       │   │   └── use-event.ts    [user-owned]
+│       │   ├── mocks/
+│       │   │   ├── entities/
+│       │   │   │   └── notes_gen.ts    [forge-space, regenerated]
+│       │   │   ├── scenarios/
+│       │   │   │   ├── default.ts    [user-owned]
+│       │   │   │   └── index_gen.ts    [forge-space, regenerated]
+│       │   │   ├── services/
+│       │   │   │   └── notes-service_gen.ts    [forge-space, regenerated]
+│       │   │   ├── fixture-freshness_gen.test.ts    [forge-space, regenerated]
+│       │   │   ├── fixture-manifest_gen.ts    [forge-space, regenerated]
+│       │   │   ├── notes_gen.ts    [forge-space, regenerated]
+│       │   │   ├── scenario-rpcs_gen.ts    [forge-space, regenerated]
+│       │   │   └── scenario-types_gen.ts    [forge-space, regenerated]
+│       │   └── stores/
+│       │       └── ui-store.ts    [user-owned]
+│       ├── Dockerfile    [user-owned]
+│       ├── buf.gen.yaml    [user-owned]
+│       ├── eslint.config.mjs    [user-owned]
+│       ├── go.mod    [user-owned]
+│       ├── next-env.d.ts    [user-owned]
+│       ├── next.config.ts    [user-owned]
+│       ├── package.json    [user-owned]
+│       ├── pnpm-lock.yaml    [user-owned]
+│       ├── pnpm-workspace.yaml    [user-owned]
+│       ├── postcss.config.mjs    [user-owned]
+│       ├── prettier.config.js    [user-owned]
+│       ├── stylelint.config.mjs    [user-owned]
+│       ├── tsconfig.json    [user-owned]
+│       └── vitest.config.ts    [user-owned]
+├── gen/
+│   ├── forge_descriptor/
+│   │   ├── notes/
+│   │   │   └── config/
+│   │   │       └── v1/
+│   │   │           ├── config.json    [user-owned]
+│   │   │           └── web_config.json    [user-owned]
+│   │   └── services/
+│   │       └── notes/
+│   │           └── v1/
+│   │               └── notes.json    [user-owned]
+│   ├── notes/
+│   │   └── config/
+│   │       └── v1/
+│   │           ├── config.pb.go    [user-owned]
+│   │           └── web_config.pb.go    [user-owned]
+│   ├── services/
+│   │   └── notes/
+│   │       └── v1/
+│   │           ├── notesv1connect/
+│   │           │   └── notes.connect.go    [user-owned]
+│   │           └── notes.pb.go    [user-owned]
+│   ├── forge_service_catalog.json    [user-owned]
+│   ├── go.mod    [user-owned]
+│   └── go.sum    [user-owned]
+├── internal/
+│   ├── app/
+│   │   ├── auth.go    [user-owned]
+│   │   ├── compose.go    [user-owned]
+│   │   ├── graph_gen.go    [forge-space, regenerated]
+│   │   ├── login_broker.go    [user-owned]
+│   │   ├── providers.go    [user-owned]
+│   │   └── routes_gen.go    [forge-space, regenerated]
+│   ├── db/
+│   │   ├── note_orm_gen.go    [forge-space, regenerated]
+│   │   ├── note_repo_ext.go    [user-owned]
+│   │   ├── note_store_gen.go    [forge-space, regenerated]
+│   │   └── store_gen.go    [forge-space, regenerated]
+│   ├── handlers/
+│   │   ├── mocks/
+│   │   │   └── notes_mock_gen.go    [forge-space, regenerated]
+│   │   └── notes/
+│   │       ├── factories_gen_test.go    [forge-space, regenerated]
+│   │       ├── handlers_crud.go    [user-owned]
+│   │       ├── handlers_crud_ops_gen.go    [forge-space, regenerated]
+│   │       ├── handlers_crud_test.go    [user-owned]
+│   │       ├── helpers_gen_test.go    [forge-space, regenerated]
+│   │       └── service.go    [user-owned]
+│   └── metrics/
+│       └── metrics.go    [user-owned]
+├── pkg/
+│   ├── app/
+│   │   └── CONVENTIONS.md    [user-owned]
+│   ├── config/
+│   │   ├── config_gen.go    [forge-space, regenerated]
+│   │   └── roots_gen.go    [forge-space, regenerated]
+│   └── middleware/
+│       ├── middleware.go    [user-owned]
+│       ├── middleware_test.go    [user-owned]
+│       └── procedures_gen.go    [forge-space, regenerated]
+├── proto/
+│   ├── api/
+│   │   └── README.md    [user-owned]
+│   ├── forge/
+│   │   └── v1/
+│   │       └── forge.proto    [user-owned]
+│   ├── notes/
+│   │   └── config/
+│   │       └── v1/
+│   │           ├── config.proto    [user-owned]
+│   │           └── web_config.proto    [user-owned]
+│   └── services/
+│       └── notes/
+│           └── v1/
+│               └── notes.proto    [user-owned]
+├── scripts/
+│   └── bootstrap.sh    [user-owned]
+├── secrets/
+│   └── dev.yaml    [user-owned]
+├── tools/
+│   └── tools.go    [user-owned]
+├── CHANGELOG.md    [user-owned]
+├── CONTRIBUTING.md    [user-owned]
+├── Dockerfile    [user-owned]
+├── SECURITY.md    [user-owned]
+├── Taskfile.yml    [user-owned]
+├── buf.gen.yaml    [user-owned]
+├── buf.yaml    [user-owned]
+├── docker-compose.yml    [user-owned]
+├── forge.yaml    [user-owned]
+├── go.mod    [user-owned]
+├── go.sum    [user-owned]
+├── go.work    [user-owned]
+├── go.work.sum    [user-owned]
+└── idp-steps.yaml    [user-owned]

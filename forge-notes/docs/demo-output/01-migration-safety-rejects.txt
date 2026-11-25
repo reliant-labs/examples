@@ -1,0 +1,7 @@
+$ forge lint --migration-safety
+▸ --migration-safety
+❌ migration-safety — 1 error
+   ✗ db/migrations/20261125231752_add_note_pinned.up.sql:12 [unsafe-add-not-null-column] ADD COLUMN ... NOT NULL without a DEFAULT fails on populated tables; give it a constant DEFAULT (metadata-only, and the previous release's inserts keep working)
+      → give the column a constant DEFAULT (ADD COLUMN ... NOT NULL DEFAULT <constant>) — on postgres 11+ that is metadata-only, and the previous release's INSERTs, which do not name the column, get the default; for a derived column make the database compute it (ADD COLUMN ... GENERATED ALWAYS AS (<expr>) STORED NOT NULL, which this rule accepts); or add the column nullable, backfill it with an UPDATE, then SET NOT NULL — but SET NOT NULL breaks a previous release that inserts without the column, so put it in a later (contract) migration once no running release does; or — if you know the table is empty — mark the migration file with a "-- forge:allow-unsafe-not-null" comment
+Error: forge lint: 1 gating linter(s) failed: migration-safety. Fix: address the findings above under each ❌ lane; re-run 'forge lint' to confirm.
+exit=1
