@@ -7,7 +7,7 @@ read it step by step with `git log -- <directory>`.
 
 | Example | What it shows | Needs |
 | --- | --- | --- |
-| [`forge-notes/`](forge-notes/) | A full-stack Forge app (Go Connect RPC API, Postgres, Next.js frontend) built one commit at a time, and two Forge checks catching real mistakes: an unsafe migration, and a hand edit to a generated file | Go, Node 20+, Docker. No account. |
+| [`forge-notes/`](forge-notes/) | A full-stack Forge app (Go Connect RPC API, Postgres, Next.js frontend) built one commit at a time, and two Forge checks catching real mistakes: an unsafe migration, and a hand edit to a generated file | Go, Node 22.12+, Docker. No account. |
 | [`reliant-fix-review-approve/`](reliant-fix-review-approve/) | A Reliant workflow: an agent fixes a failing test in its own git workspace, a second agent reviews the diff, and the run waits for a person to approve before anything is published | Go 1.22+ and the `reliant` CLI. A Reliant account only for a live run. |
 
 ## forge-notes

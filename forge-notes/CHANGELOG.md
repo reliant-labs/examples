@@ -21,4 +21,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-[Unreleased]: https://github.com/OWNER/notes/compare/HEAD...HEAD
+[Unreleased]: https://github.com/reliant-labs/examples/commits/main/forge-notes

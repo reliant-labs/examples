@@ -41,7 +41,7 @@ captures are in [`docs/demo-output/`](docs/demo-output/).
 
 ## Run it locally
 
-Needs Go, Node 20+ and Docker (for the local telemetry stack). No account.
+Needs Go, Node 22.12+ and Docker (for the local telemetry stack). No account.
 
 ```bash
 git clone https://github.com/reliant-labs/examples && cd examples/forge-notes
@@ -240,18 +240,21 @@ https://docs.reliantlabs.io/forge/project-anatomy. The README that
 
 ## Deploying it
 
-Not deployed from this repository. The app has no sign-in, so add auth before
-any deploy the public can reach. The options:
+Not deployed from this repository, and not ready to be as it stands. The app
+has no sign-in: anyone who can reach it can create and edit notes. Add auth
+before you deploy it anywhere the public can reach. [Forge
+auth](https://docs.reliantlabs.io/forge/auth) shows how to turn on sign-in for
+a Forge app's own users.
+
+With auth in place, the options:
 
 - **Your own Kubernetes cluster, no Reliant account:**
   https://docs.reliantlabs.io/forge/deploy/self-hosted-delivery (direct apply
   from your machine, or a Flux that Forge installs in your cluster), with a
   walkthrough at
   https://docs.reliantlabs.io/guides/hosting/deploy-to-your-own-kubernetes.
-- **Reliant hosting, no account, 72 hours:**
-  `npx -y @reliantlabs/forge@1.11.0 env deploy prod --claimable` publishes a
-  temporary URL. Unclaimed deploys go offline after 72 hours. Note this app
-  has no sign-in, so anyone with the URL can write to it.
+- **Reliant hosting:**
+  https://docs.reliantlabs.io/forge/environments-and-deploys.
 
 ### What it costs on Reliant hosting
 
