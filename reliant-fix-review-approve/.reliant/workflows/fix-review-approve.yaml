@@ -1,0 +1,316 @@
+name: fix-review-approve
+title: Fix, review, approve
+description: >-
+  Runs the tests. If they fail, an agent fixes the code in its own git
+  workspace until the tests pass, the workflow checks that no test file was
+  touched, a second agent reviews the diff, and the run pauses for a person to
+  approve before anything is pushed. Without publish_repo, an approved fix stays
+  on the workspace's local branch.
+
+inputs:
+  test_command:
+    type: string
+    default: go test ./...
+    description: The command that must exit 0. It runs in the chat's checkout first, then in the agent's workspace.
+  protected_pathspec:
+    type: string
+    default: "*_test.go"
+    description: Git pathspec the fixing agent must not touch. Any change under it stops the run before review.
+  max_attempts:
+    type: integer
+    default: 3
+    min: 1
+    max: 5
+    description: Most fix-and-test rounds before the run gives up
+  approval_timeout:
+    type: string
+    default: 4h
+    description: How long to wait for your decision, as a Go duration (30m, 4h)
+  publish_repo:
+    type: string
+    default: ""
+    description: >-
+      GitHub repository (owner/name) to push the approved fix to, on a
+      reliant-demo/ branch. Leave empty to push nothing: the approved fix stays
+      on the workspace's local branch.
+  unattended:
+    type: boolean
+    default: false
+    description: >-
+      No person is available: the approval resolves at once with status
+      unattended and nothing is published. A run an automation starts is
+      unattended whatever this says. Leave it off and start the run by hand
+      to get the human gate.
+
+entry: [tests]
+
+nodes:
+  # 1. Run the tests where the chat is. A failure is saved to the thread, so
+  #    every agent below starts from the real test output.
+  - id: tests
+    type: run
+    timeout: 5m
+    credentials: none
+    command: "{{inputs.test_command}}"
+    save_message:
+      condition: "output.exit_code != 0"
+      role: user
+      content: |
+        `{{inputs.test_command}}` fails on the committed code:
+        ```
+        {{output.stdout}}{{output.stderr}}
+        ```
+
+  - id: already_green
+    type: save_message
+    outcome: success
+    args:
+      role: assistant
+      content: "`{{inputs.test_command}}` passes. Nothing to fix. Break a test (scripts/break-it.sh) and run this again."
+
+  # 2. An isolated workspace: its own directory and branch, started from the
+  #    commit the chat is on. The chat's checkout is never edited.
+  - id: workspace
+    type: create_worktree
+    args:
+      name: fix-{{workflow.id}}
+      base_branch: "{{has(workflow.branch) ? workflow.branch : 'HEAD'}}"
+
+  # 3. Fix until green, in the workspace (fix-until-green.yaml). The workflow's
+  #    own test run decides when the loop ends, not the agent.
+  - id: attempts
+    type: workflow
+    ref: project://fix-until-green
+    args:
+      workspace_path: "{{nodes.workspace.path}}"
+      test_command: "{{inputs.test_command}}"
+      protected_pathspec: "{{inputs.protected_pathspec}}"
+      max_attempts: "{{inputs.max_attempts}}"
+
+  - id: gave_up
+    type: save_message
+    outcome: failure
+    args:
+      role: assistant
+      display_style: warning
+      content: |
+        Tests still fail after {{nodes.attempts.attempts}} attempt(s). Nothing was published.
+        Last output:
+        ```
+        {{nodes.attempts.test_output}}
+        ```
+
+  # 4. Deterministic guard: the agent was told not to touch tests; check it.
+  - id: guard
+    type: run
+    timeout: 1m
+    credentials: none
+    command: >-
+      cd '{{nodes.workspace.path}}' &&
+      changed="$(git status --porcelain -- '{{inputs.protected_pathspec}}')" &&
+      if [ -n "$changed" ]; then echo "$changed"; exit 1; fi
+
+  - id: tests_touched
+    type: save_message
+    outcome: failure
+    args:
+      role: assistant
+      display_style: warning
+      content: |
+        The agent changed files under `{{inputs.protected_pathspec}}`, so the fix is not reviewed or published:
+        ```
+        {{nodes.guard.stdout}}
+        ```
+
+  - id: changes
+    type: run
+    timeout: 1m
+    credentials: none
+    command: "cd '{{nodes.workspace.path}}' && git status --short && echo && git diff HEAD"
+
+  - id: diff_unreadable
+    type: save_message
+    outcome: failure
+    args:
+      role: assistant
+      display_style: warning
+      content: "Could not read the workspace's diff, so nothing was reviewed or published: {{nodes.changes.stderr}}"
+
+  # 5. An independent reviewer: a new context, read-and-run tools only.
+  - id: review
+    type: workflow
+    ref: builtin://structured-agent
+    project:
+      path: "{{nodes.workspace.path}}"
+    args:
+      mode: auto
+      max_turns: 30
+      tools: ["view", "tag:shell"]
+      system_prompt: >-
+        You review a change another agent made to fix failing tests. You never
+        change files. Approve only a minimal, correct fix to the code under test.
+      response_tool_name: submit_review
+      response_schema:
+        type: object
+        required: [verdict, summary]
+        properties:
+          verdict:
+            type: string
+            enum: [approve, request_changes]
+          summary:
+            type: string
+            description: What the change does and why it is or is not right, in 2-4 sentences
+    thread:
+      mode: fork
+      inject:
+        role: user
+        content: |
+          Review this change in your working directory. Run `{{inputs.test_command}}` yourself.
+          ```
+          {{nodes.changes.stdout}}
+          ```
+
+  - id: review_blocked
+    type: save_message
+    outcome: failure
+    args:
+      role: assistant
+      display_style: warning
+      content: "The reviewer requested changes, so nothing was published: {{nodes.review.response.summary}}"
+
+  # 6. What the approver needs, in the run, right above the gate.
+  - id: brief
+    type: save_message
+    args:
+      role: assistant
+      content: |
+        Ready for your decision.
+        - Tests: `{{inputs.test_command}}` passes after {{nodes.attempts.attempts}} attempt(s)
+        - Test files untouched (`{{inputs.protected_pathspec}}`)
+        - Reviewer: {{nodes.review.response.verdict}}. {{nodes.review.response.summary}}
+        - Workspace: {{nodes.workspace.path}} (branch {{nodes.workspace.branch}})
+        - On approval: {{inputs.publish_repo != '' ? 'push to ' + inputs.publish_repo + ' branch reliant-demo/fix-' + workflow.id : 'nothing is pushed; the fix stays on the local branch'}}
+
+        ```
+        {{nodes.changes.stdout}}
+        ```
+
+  # 7. The human gate. Only 'approved' continues; deny, timeout and an
+  #    unattended run all end without publishing.
+  - id: approve
+    type: approval
+    args:
+      title: "Publish the agent's fix? Tests pass and the reviewer approved."
+      timeout: "{{inputs.approval_timeout}}"
+
+  - id: publish
+    type: git_publish
+    args:
+      worktree: "{{nodes.workspace.path}}"
+      repo: "{{inputs.publish_repo}}"
+      branch: reliant-demo/fix-{{workflow.id}}
+      allow: ["reliant-demo/*"]
+      message: "Fix failing tests (agent fix, agent review, human approval)"
+
+  - id: kept_local
+    type: save_message
+    outcome: success
+    args:
+      role: assistant
+      content: |
+        Approved. Nothing was pushed (publish_repo is empty). The fix is uncommitted in
+        {{nodes.workspace.path}} on branch {{nodes.workspace.branch}}.
+
+  - id: published
+    type: save_message
+    outcome: success
+    args:
+      role: assistant
+      content: "Approved and pushed {{nodes.publish.sha}} to {{inputs.publish_repo}} branch {{nodes.publish.branch}} ({{nodes.publish.files_changed}} file(s), +{{nodes.publish.insertions}}/-{{nodes.publish.deletions}})."
+
+  - id: not_pushed
+    type: save_message
+    outcome: failure
+    args:
+      role: assistant
+      display_style: warning
+      content: "Approved, but nothing was pushed: {{nodes.publish.refused ? nodes.publish.refusal : 'there were no changes to commit'}}"
+
+  - id: denied
+    type: save_message
+    args:
+      role: assistant
+      content: "Denied. Nothing was published. The fix is still in {{nodes.workspace.path}} if you want to look."
+
+  - id: undecided
+    type: save_message
+    outcome: failure
+    args:
+      role: assistant
+      display_style: warning
+      content: >-
+        Nothing was published: nobody decided ({{nodes.approve.status}}).
+        {{nodes.approve.status == 'unattended' ? 'An automation started this run, so the approval could not wait for a person. Start it by hand (a chat or reliant workflow run) to get the human gate.' : ''}}
+
+edges:
+  - from: tests
+    cases:
+      - to: already_green
+        condition: nodes.tests.exit_code == 0
+        label: green
+    default: workspace
+  - from: workspace
+    default: attempts
+  - from: attempts
+    cases:
+      - to: guard
+        condition: nodes.attempts.exit_code == 0
+        label: green
+    default: gave_up
+  - from: guard
+    cases:
+      - to: changes
+        condition: nodes.guard.exit_code == 0
+        label: tests_untouched
+    default: tests_touched
+  - from: changes
+    cases:
+      - to: review
+        condition: nodes.changes.exit_code == 0
+        label: diff_read
+    default: diff_unreadable
+  - from: review
+    cases:
+      - to: brief
+        condition: has(nodes.review.response) && nodes.review.response != null && nodes.review.response.verdict == 'approve'
+        label: approved_by_reviewer
+    default: review_blocked
+  - from: brief
+    default: approve
+  - from: approve
+    cases:
+      - to: publish
+        condition: nodes.approve.status == 'approved' && inputs.publish_repo != ''
+        label: approved_publish
+      - to: kept_local
+        condition: nodes.approve.status == 'approved'
+        label: approved_local
+      - to: denied
+        condition: nodes.approve.status == 'denied'
+        label: denied
+    default: undecided
+  - from: publish
+    cases:
+      - to: published
+        condition: nodes.publish.pushed == true
+        label: pushed
+    default: not_pushed
+
+on_failure:
+  sequence:
+    - id: note
+      type: save_message
+      args:
+        role: assistant
+        display_style: warning
+        content: "The run failed at {{failure.node_id}} ({{failure.error_code}}): {{failure.error}}. Nothing was published."

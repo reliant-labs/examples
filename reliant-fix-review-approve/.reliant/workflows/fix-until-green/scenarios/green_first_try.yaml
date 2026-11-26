@@ -1,0 +1,14 @@
+name: green_first_try
+description: One fix makes the tests pass; the loop stops after one round
+inputs:
+  workspace_path: /w/fix-run
+events:
+  - node: fix_loop.fix
+    black_box: true
+    output: {response_text: "Fixed the comparison."}
+  - node: fix_loop.verify
+    output: {exit_code: 0, stdout: "ok\n"}
+expect:
+  outcome: completed
+  completed: [fix_loop]
+  outputs: {exit_code: 0, attempts: 1}

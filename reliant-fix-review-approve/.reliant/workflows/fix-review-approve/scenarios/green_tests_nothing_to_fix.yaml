@@ -1,0 +1,9 @@
+name: green_tests_nothing_to_fix
+description: The tests already pass, so no workspace, agent or approval is involved
+events:
+  - node: tests
+    output: {exit_code: 0, stdout: "ok  \texample.com/checkout/pricing\t0.006s\n"}
+expect:
+  outcome: completed
+  completed: [tests, already_green]
+  not_reached: [workspace, attempts, review, approve, publish]

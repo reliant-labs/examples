@@ -1,0 +1,76 @@
+name: fix-until-green
+title: Fix until green (building block)
+description: >-
+  Building block of fix-review-approve: an agent fixes the code in a given
+  workspace, the workflow runs the tests there, and it repeats until they pass
+  or the attempts run out. It never commits or pushes.
+hidden: true
+
+inputs:
+  workspace_path:
+    type: string
+    description: Absolute path of the workspace the agent edits and the tests run in
+  test_command:
+    type: string
+    default: go test ./...
+    description: The command that must exit 0
+  protected_pathspec:
+    type: string
+    default: "*_test.go"
+    description: Git pathspec the agent is told not to touch (fix-review-approve checks it afterwards)
+  max_attempts:
+    type: integer
+    default: 3
+    min: 1
+    max: 5
+    description: Most fix-and-test rounds
+
+entry: [fix_loop]
+
+nodes:
+  # The workflow's own test run decides when the loop ends, not the agent.
+  - id: fix_loop
+    type: loop
+    while: outputs.exit_code != 0 && iter.iteration < inputs.max_attempts
+    inline:
+      entry: [fix]
+      outputs:
+        exit_code: "{{nodes.verify.exit_code}}"
+        test_output: "{{nodes.verify.stdout + nodes.verify.stderr}}"
+      nodes:
+        - id: fix
+          type: workflow
+          ref: builtin://agent
+          project:
+            path: "{{inputs.workspace_path}}"
+          args:
+            mode: auto
+            max_turns: 40
+            spawn_presets: []
+            tool_params:
+              shell: {credentials: none}
+          thread:
+            mode: fork
+            memo: true
+            inject:
+              role: user
+              content: |
+                Attempt {{iter.iteration + 1}} of {{inputs.max_attempts}}. Make `{{inputs.test_command}}` pass
+                in your working directory. Fix the code, not the tests: do not edit, add or delete
+                anything matching `{{inputs.protected_pathspec}}`. Do not commit or push; the
+                workflow publishes only after review and a person's approval.
+                {{iter.iteration > 0 ? 'The tests still fail. Their output:\n' + outputs.test_output : ''}}
+
+        - id: verify
+          type: run
+          timeout: 5m
+          credentials: none
+          command: "cd '{{inputs.workspace_path}}' && {{inputs.test_command}}"
+      edges:
+        - from: fix
+          default: verify
+
+outputs:
+  exit_code: "{{nodes.fix_loop.exit_code}}"
+  test_output: "{{nodes.fix_loop.test_output}}"
+  attempts: "{{nodes.fix_loop._iterations}}"

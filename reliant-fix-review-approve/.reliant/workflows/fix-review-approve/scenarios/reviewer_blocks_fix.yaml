@@ -1,0 +1,28 @@
+name: reviewer_blocks_fix
+description: The tests pass but the reviewer requests changes, so no approval is asked for
+events:
+  - node: tests
+    output: {exit_code: 1, stdout: "--- FAIL\n"}
+  - node: workspace
+    output: {path: /w/fix-run6, branch: worktree/fix-run6}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Special-cased 5000 cents."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 0}
+  - node: guard
+    output: {exit_code: 0}
+  - node: changes
+    output: {exit_code: 0, stdout: " M pricing/pricing.go\n"}
+  - node: review
+    black_box: true
+    output:
+      completed: true
+      response: {verdict: request_changes, summary: "Hard-codes the test's value instead of fixing the comparison."}
+expect:
+  outcome: failed
+  completed: [review, review_blocked]
+  not_reached: [brief, approve, publish]
+  messages:
+    review_blocked:
+      content_contains: ["Hard-codes the test's value"]

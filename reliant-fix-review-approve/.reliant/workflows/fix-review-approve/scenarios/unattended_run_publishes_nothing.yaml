@@ -1,0 +1,34 @@
+name: unattended_run_publishes_nothing
+description: >-
+  An automation started the run, so the approval resolves at once as
+  unattended; the run fails without publishing and says to start it by hand
+inputs:
+  publish_repo: you/reliant-workflow-demo
+  unattended: true
+events:
+  - node: tests
+    output: {exit_code: 1, stdout: "--- FAIL\n"}
+  - node: workspace
+    output: {path: /w/fix-run, branch: worktree/fix-run}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Fixed."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 0}
+  - node: guard
+    output: {exit_code: 0}
+  - node: changes
+    output: {exit_code: 0, stdout: " M pricing/pricing.go\n"}
+  - node: review
+    black_box: true
+    output:
+      completed: true
+      response: {verdict: approve, summary: "Minimal and correct."}
+expect:
+  outcome: failed
+  reached: [approve]
+  completed: [undecided]
+  not_reached: [publish, kept_local, denied]
+  messages:
+    undecided:
+      content_contains: ["nobody decided (unattended)", "Start it by hand"]

@@ -1,0 +1,20 @@
+name: unreadable_diff_stops_before_review
+description: The workspace diff cannot be read, so nothing is reviewed or approved
+events:
+  - node: tests
+    output: {exit_code: 1, stdout: "--- FAIL\n"}
+  - node: workspace
+    output: {path: /w/fix-run, branch: worktree/fix-run}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Fixed."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 0}
+  - node: guard
+    output: {exit_code: 0}
+  - node: changes
+    output: {exit_code: 128, stderr: "fatal: not a git repository"}
+expect:
+  outcome: failed
+  completed: [changes, diff_unreadable]
+  not_reached: [review, approve, publish]

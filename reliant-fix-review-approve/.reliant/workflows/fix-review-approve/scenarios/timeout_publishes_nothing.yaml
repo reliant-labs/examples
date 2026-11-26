@@ -1,0 +1,32 @@
+name: timeout_publishes_nothing
+description: Nobody decides before approval_timeout, so the run ends failed and nothing is published
+inputs:
+  publish_repo: you/reliant-workflow-demo
+events:
+  - node: tests
+    output: {exit_code: 1, stdout: "--- FAIL\n"}
+  - node: workspace
+    output: {path: /w/fix-run4, branch: worktree/fix-run4}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Fixed."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 0}
+  - node: guard
+    output: {exit_code: 0}
+  - node: changes
+    output: {exit_code: 0, stdout: " M pricing/pricing.go\n"}
+  - node: review
+    black_box: true
+    output:
+      completed: true
+      response: {verdict: approve, summary: "Looks right."}
+  - node: approve
+    output: {approval_id: appr-4, status: timeout}
+expect:
+  outcome: failed
+  completed: [approve, undecided]
+  not_reached: [publish, kept_local, denied]
+  messages:
+    undecided:
+      content_contains: ["nobody decided (timeout)"]

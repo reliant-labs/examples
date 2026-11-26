@@ -1,0 +1,29 @@
+name: denied_publishes_nothing
+description: A person denies the reviewed fix, so git_publish never runs even with publish_repo set
+inputs:
+  publish_repo: you/reliant-workflow-demo
+events:
+  - node: tests
+    output: {exit_code: 1, stdout: "--- FAIL\n"}
+  - node: workspace
+    output: {path: /w/fix-run3, branch: worktree/fix-run3}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Fixed."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 0}
+  - node: guard
+    output: {exit_code: 0}
+  - node: changes
+    output: {exit_code: 0, stdout: " M pricing/pricing.go\n"}
+  - node: review
+    black_box: true
+    output:
+      completed: true
+      response: {verdict: approve, summary: "Looks right."}
+  - node: approve
+    output: {approval_id: appr-3, status: denied, action_taken: deny}
+expect:
+  outcome: completed
+  completed: [approve, denied]
+  not_reached: [publish, published, kept_local, undecided]

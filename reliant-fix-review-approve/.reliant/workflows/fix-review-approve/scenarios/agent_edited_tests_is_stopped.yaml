@@ -1,0 +1,23 @@
+name: agent_edited_tests_is_stopped
+description: >-
+  The agent makes the tests pass by editing the test file; the guard catches it
+  and the run fails before review or approval
+events:
+  - node: tests
+    output: {exit_code: 1, stdout: "--- FAIL\n"}
+  - node: workspace
+    output: {path: /w/fix-run5, branch: worktree/fix-run5}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Updated the expected value in the test."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 0}
+  - node: guard
+    output: {exit_code: 1, stdout: " M pricing/pricing_test.go\n"}
+expect:
+  outcome: failed
+  completed: [attempts, guard, tests_touched]
+  not_reached: [changes, review, approve, publish]
+  messages:
+    tests_touched:
+      content_contains: ["pricing/pricing_test.go"]

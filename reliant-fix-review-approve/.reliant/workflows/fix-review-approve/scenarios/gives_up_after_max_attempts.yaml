@@ -1,0 +1,28 @@
+name: gives_up_after_max_attempts
+description: The tests never pass; the loop stops at max_attempts and nothing is reviewed or published
+inputs:
+  max_attempts: 2
+events:
+  - node: tests
+    output: {exit_code: 1, stdout: "--- FAIL\n"}
+  - node: workspace
+    output: {path: /w/fix-run7, branch: worktree/fix-run7}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Try 1."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 1, stdout: "--- FAIL: one\n"}
+  - node: attempts.fix_loop.fix
+    black_box: true
+    output: {response_text: "Try 2."}
+  - node: attempts.fix_loop.verify
+    output: {exit_code: 1, stdout: "--- FAIL: two\n"}
+expect:
+  outcome: failed
+  completed: [attempts, gave_up]
+  not_reached: [guard, review, approve, publish]
+  node_outputs:
+    attempts: {attempts: 2}
+  messages:
+    gave_up:
+      content_contains: ["after 2 attempt(s)", "FAIL: two"]
