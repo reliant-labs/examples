@@ -5,9 +5,20 @@ A small full-stack app made with [Forge](https://github.com/reliant-labs/forge)
 Next.js static-export frontend that lists, creates, views and edits notes
 through generated TypeScript hooks.
 
-The point of this repo is the history, not the app. Each step is its own
-commit, so you can see what Forge wrote, what a person wrote, and what Forge's
-checks refuse:
+> **No sign-in.** This app has no authentication: anyone who can reach it can
+> create and edit notes. Run it locally. Don't deploy it where the public can
+> reach it without adding auth first
+> ([Forge auth](https://docs.reliantlabs.io/forge/auth)).
+
+This app lives in the `forge-notes/` directory of
+[reliant-labs/examples](https://github.com/reliant-labs/examples). Run every
+command below from inside `forge-notes/`, where `forge.yaml` is. From the
+repository root Forge finds no project, and `forge lint` reports a pass
+without checking anything.
+
+The point of this directory is the history, not the app. Each step is its own
+commit (`git log --oneline -- forge-notes`), so you can see what Forge wrote,
+what a person wrote, and what Forge's checks refuse:
 
 | Commit / ref | What happens |
 | --- | --- |
@@ -15,9 +26,9 @@ checks refuse:
 | `Declare the Note entity` | the one hand-written input: a `// forge:entity` message in the proto (6 lines) |
 | `forge scaffold: ...` | Forge births the `notes` table migration, the CRUD rpcs, the ORM, handlers, hooks and pages |
 | `Open the CRUD rpcs ...` | flip `auth_required` to `false` (a public board, no sign-in), then `forge generate` |
-| tag `demo/unsafe-migration` | a migration that `forge lint --migration-safety` **rejects** |
-| tag `demo/safe-migration` (`main`) | the fix, and the regenerated ORM |
-| branch `demo/hand-edit-generated` | a hand edit to a generated file that `forge lint --generated-drift` **rejects** |
+| tag `forge-notes/unsafe-migration` | a migration that `forge lint --migration-safety` **rejects** |
+| tag `forge-notes/safe-migration` (`main`) | the fix, and the regenerated ORM |
+| branch `forge-notes/hand-edit-generated` | a hand edit to a generated file that `forge lint --generated-drift` **rejects** |
 
 It reproduces `examples/nextjs-static-go-api/scaffold.sh` from the Forge repo,
 split into commits, then adds the two checks.
@@ -33,7 +44,7 @@ captures are in [`docs/demo-output/`](docs/demo-output/).
 Needs Go, Node 20+ and Docker (for the local telemetry stack). No account.
 
 ```bash
-git clone <this repo> notes && cd notes
+git clone https://github.com/reliant-labs/examples && cd examples/forge-notes
 npx -y @reliantlabs/forge@1.11.0 env up dev
 ```
 
@@ -74,7 +85,7 @@ Builds, without the dev loop: `go build ./...` and
 
 ## Check 1: an unsafe migration is rejected
 
-Commit `Add notes.pinned (UNSAFE ...)` (tag `demo/unsafe-migration`) adds
+Commit `Add notes.pinned (UNSAFE ...)` (tag `forge-notes/unsafe-migration`) adds
 `db/migrations/20261125231752_add_note_pinned.up.sql`, created with
 `forge db migration new add_note_pinned`:
 
@@ -86,7 +97,7 @@ ALTER TABLE notes ADD COLUMN pinned BOOLEAN NOT NULL;
 That works on the empty database a test suite starts from. Forge refuses it:
 
 ```text
-$ git checkout demo/unsafe-migration
+$ git checkout forge-notes/unsafe-migration
 $ forge lint --migration-safety
 ▸ --migration-safety
 ❌ migration-safety — 1 error
@@ -118,7 +129,7 @@ ERROR:  column "pinned" of relation "notes" contains null values
 ROLLBACK
 ```
 
-The fix (next commit, tag `demo/safe-migration`) is the one the lint suggests,
+The fix (next commit, tag `forge-notes/safe-migration`) is the one the lint suggests,
 a constant default:
 
 ```sql
@@ -140,7 +151,7 @@ https://docs.reliantlabs.io/forge/linting/rules-migrations.
 
 ## Check 2: a hand edit to a generated file is caught
 
-On branch `demo/hand-edit-generated`, one commit adds a constant straight into
+On branch `forge-notes/hand-edit-generated`, one commit adds a constant straight into
 `internal/db/note_orm_gen.go`, which starts:
 
 ```go
@@ -158,7 +169,7 @@ On branch `demo/hand-edit-generated`, one commit adds a constant straight into
 ```
 
 ```text
-$ git checkout demo/hand-edit-generated
+$ git checkout forge-notes/hand-edit-generated
 $ forge lint --generated-drift
 ▸ --generated-drift
 ❌ generated-drift — 1 error
@@ -229,7 +240,8 @@ https://docs.reliantlabs.io/forge/project-anatomy. The README that
 
 ## Deploying it
 
-Not deployed from this repo. The options:
+Not deployed from this repository. The app has no sign-in, so add auth before
+any deploy the public can reach. The options:
 
 - **Your own Kubernetes cluster, no Reliant account:**
   https://docs.reliantlabs.io/forge/deploy/self-hosted-delivery (direct apply
@@ -272,4 +284,4 @@ FORGE="npx -y @reliantlabs/forge@1.11.0" forge/examples/nextjs-static-go-api/sca
 
 That is the same sequence as the first four commits here (`scaffold.sh` is on
 Forge's `main`, added after the v1.11.0 tag). The migration and the hand edit
-are this repo's additions.
+are this directory's additions.

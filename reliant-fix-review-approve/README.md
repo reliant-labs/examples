@@ -31,6 +31,25 @@ The only dependency is Go 1.22 or later. There are no modules to download.
 
 ## Try it
 
+### 0. Copy it into its own repository
+
+This example lives in the `reliant-fix-review-approve/` directory of
+[reliant-labs/examples](https://github.com/reliant-labs/examples). The
+workflow was built and tested with this directory as the root of its own git
+repository: its workspace is a git worktree, which always holds the whole
+repository, and its test command runs from the workspace's top. We haven't
+tested it from a subdirectory of a larger repository, so copy the directory
+out first:
+
+```bash
+git clone https://github.com/reliant-labs/examples
+cp -r examples/reliant-fix-review-approve fix-review-approve
+cd fix-review-approve
+git init -q -b main && git add -A && git commit -qm "Start from reliant-labs/examples"
+```
+
+Run every command below from that new directory.
+
 ### 1. Check it without an account
 
 `validate`, `lint` and `scenario run` read the files on disk. They need no
@@ -44,7 +63,7 @@ reliant workflow lint             # unattended-safety rules
 reliant workflow scenario run     # 13 scenarios on the real engine, nodes mocked
 ```
 
-What we saw with reliant 1.29.0:
+What we saw with reliant 1.29.0 (1.32.0 gives the same result):
 
 ```text
   ✓ fix-review-approve.yaml (fix-review-approve)
@@ -209,7 +228,9 @@ app's Workspaces panel.
 
 ## License
 
-This demo has no license file yet; add one before publishing it. Reliant itself is source-available under the
-Business Source License 1.1. It isn't open source: each version converts to
+This example is under the Apache License 2.0, like the rest of
+[reliant-labs/examples](https://github.com/reliant-labs/examples) (see the
+`LICENSE` file at the repository root). Reliant itself is source-available
+under the Business Source License 1.1. It isn't open source: each version converts to
 Apache 2.0 four years after release
 ([License FAQ](https://docs.reliantlabs.io/license-faq)).

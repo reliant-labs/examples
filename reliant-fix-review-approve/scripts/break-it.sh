@@ -10,7 +10,7 @@
 # committed, not just saved. Undo with: git checkout main && git branch -D try/break-shipping
 set -eu
 
-cd "$(git rev-parse --show-toplevel)"
+cd "$(dirname "$0")/.."
 
 if ! git diff --quiet || ! git diff --cached --quiet; then
 	echo "break-it: commit or stash your changes first" >&2
